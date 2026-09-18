@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeShift | Dashboard Administrador</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN (Obligatorio para la rúbrica) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Configuración personalizada de Tailwind basada en tu manual de marca -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        corpBlue: '#1E3A8A',
+                        neutralGray: '#F3F4F6',
+                        successGreen: '#10B981',
+                        alertRed: '#EF4444',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-neutralGray text-gray-800 font-sans p-6">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow">
+            <h1 class="text-2xl font-bold text-corpBlue">TimeShift - Panel Gerencial</h1>
+            <button class="bg-alertRed text-white px-4 py-2 rounded hover:bg-red-700 transition" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </header>
+
+        <!-- Contenedor principal de la vista -->
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Tabla RTA (Real-Time Adherence) (2/3 del espacio) -->
+            <section class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4 text-corpBlue">Monitoreo en Tiempo Real</h2>
+                <!-- Aquí insertarás la tabla dinámica con JS -->
+                <div id="contenedor-tabla-rta">
+                   <!-- Tabla simulada por ahora -->
+                </div>
+            </section>
+
+            <!-- Sección de Métricas y Gráficos (1/3 del espacio) -->
+            <section class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4 text-corpBlue">Distribución Operativa</h2>
+                <!-- Contenedor para Chart.js -->
+                <div class="relative h-64">
+                    <canvas id="graficaEstados"></canvas>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Script de la lógica de tu rama -->
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
