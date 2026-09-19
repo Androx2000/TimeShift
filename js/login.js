@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const esAdmin = rol === 'admin';
 
-    // Desplazamiento elástico de la cápsula
+    // Desplazamiento elastico de la cápsula
     if (pildora) {
       pildora.style.transform = esAdmin ? 'translateX(100%)' : 'translateX(0%)';
     }
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 3. Manejo de formulario y feedback elástico
+  // 3. Manejo de formulario y feedback eltastico
   const form = document.getElementById('form-login');
   const msg = document.getElementById('mensaje-login');
   const inputUsuario = document.getElementById('usuario');
