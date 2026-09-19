@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeShift - Gestión de Datos y Marcaciones</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Google Sans', 'system-ui', 'sans-serif'],
+                        mono: ['IBM Plex Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: "#FF5701",
+                        secondary: "#F6F6F1",
+                        success: "#16A34A",
+                        warning: "#D97706",
+                        danger: "#DC2626",
+                        surface: "#FFFFFF",
+                        textDark: "#111827",
+                        brandBlue: "#1e3a8a"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Ocultar barra de desplazamiento en nav */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Animación suave para modales */
+        .modal-backdrop {
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-textDark min-h-screen flex flex-col">
+
+    <!-- Header Principal TimeShift -->
+    <header class="bg-[#111827] text-white flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-8 py-4 sticky top-0 z-50 gap-4 md:gap-0 border-b border-slate-800">
+        <!-- Logo y Admin Badge -->
+        <div class="flex items-center justify-between w-full md:w-auto">
+            <div class="flex items-center gap-6">
+                <a href="dashboard.html" class="flex items-baseline gap-3 group">
+                    <h1 class="text-xl font-bold tracking-tight text-white group-hover:text-primary transition-colors">TimeShift</h1>
+                    <span class="inline-block whitespace-nowrap rounded-[0.27rem] bg-warning-100 px-[0.65em] pb-[0.25em] pt-[0.35em] text-center align-baseline text-[0.75em] font-bold leading-none text-warning-800 bg-[#2e2005] text-amber-400">Admin</span>
+                </a>
+            </div>
+            
+            <!-- Avatar Mobile -->
+            <div class="w-9 h-9 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 ring-2 ring-slate-700 md:hidden">
+                <img src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Juan+Pablo&backgroundColor=1e293b" alt="Juan Pablo" class="w-full h-full object-cover">
+            </div>
+        </div>
+
+        <!-- Navegación Entre Módulos -->
+        <div class="flex-1 w-full md:w-auto overflow-x-auto hide-scrollbar pb-1 md:pb-0">
+            <nav class="flex gap-6 md:gap-8 text-sm font-medium text-slate-400 whitespace-nowrap md:px-6">
+                <a href="dashboard.html" class="hover:text-white transition-colors flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Dashboard Principal
+                </a>
+                <a href="#modulo-empleados" id="nav-btn-empleados" class="tab-btn text-white border-b-2 border-primary pb-1 transition-colors flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    Gestión de Personal
+                </a>
+                <a href="#modulo-marcaciones" id="nav-btn-marcaciones" class="tab-btn text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Historial de Marcaciones
+                </a>
+            </nav>
+        </div>
+
+        <!-- Perfil Usuario Desktop -->
+        <div class="items-center gap-4 hidden md:flex">
+            <div class="text-right">
+                <div class="text-sm font-semibold text-white">Juan Pablo</div>
+                <div class="text-xs text-slate-400">Operaciones Globales</div>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 ring-2 ring-slate-700">
+                <img src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Juan+Pablo&backgroundColor=1e293b" alt="Juan Pablo" class="w-full h-full object-cover">
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto w-full space-y-8">
+        
+        <!-- Barra Superior de Acciones y Notificaciones Rápidas -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-brandBlue border border-blue-200">
+                        Módulo de Base de Datos
+                    </span>
+                    <span id="data-sync-badge" class="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Sincronizado en Local
+                    </span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Administración de Personal & Marcaciones</h2>
+                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Control centralizado para altas y bajas de empleados, consulta de turnos e historial de asistencias.</p>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <button id="btn-open-add-modal" class="bg-primary hover:bg-[#e04c00] text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                    + Registrar Nuevo Empleado
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SECCIÓN 1: GESTIÓN DE PERSONAL (AGREGAR / QUITAR GENTE)     -->
+        <!-- ============================================================ -->
+        <section id="section-empleados" class="space-y-6">
+            <!-- Tarjetas de Resumen General -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-blue-50 text-brandBlue flex items-center justify-center font-bold text-xl">
+                        👥
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-medium">Total de Personal</div>
+                        <div class="text-2xl font-bold text-slate-800" id="kpi-total-employees">0</div>
+                        <div class="text-[11px] text-slate-400">Registrados en plantilla</div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
+                        🟢
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-medium">Personal Activo / Turno</div>
+                        <div class="text-2xl font-bold text-emerald-600" id="kpi-active-employees">0</div>
+                        <div class="text-[11px] text-emerald-600 font-medium">En servicio hoy</div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl">
+                        🏢
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-medium">Departamentos</div>
+                        <div class="text-2xl font-bold text-slate-800" id="kpi-departments-count">0</div>
+                        <div class="text-[11px] text-slate-400">Áreas activas</div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold text-xl">
+                        ⚠️
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-medium">Bajas / Inactivos</div>
+                        <div class="text-2xl font-bold text-red-600" id="kpi-inactive-employees">0</div>
+                        <div class="text-[11px] text-slate-400">Retirados del sistema</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla y Filtros de Empleados -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- Filtros y Búsqueda -->
+                <div class="p-4 sm:p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+                    <div class="relative flex-1 max-w-md">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" id="employee-search-input" class="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-brandBlue focus:border-brandBlue block w-full pl-10 p-2.5 transition" placeholder="Buscar por nombre, cargo, ID o correo...">
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <label for="filter-department" class="text-xs font-semibold text-slate-500 whitespace-nowrap">Departamento:</label>
+                            <select id="filter-department" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-brandBlue focus:border-brandBlue p-2 transition">
+                                <option value="ALL">Todos los Departamentos</option>
+                                <option value="Operaciones">Operaciones</option>
+                                <option value="Asesoría Legal">Asesoría Legal</option>
+                                <option value="Personal Ejecutivo">Personal Ejecutivo</option>
+                                <option value="Estrategia">Estrategia</option>
+                                <option value="Administración">Administración</option>
+                                <option value="Tecnología">Tecnología</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <label for="filter-status" class="text-xs font-semibold text-slate-500 whitespace-nowrap">Estado:</label>
+                            <select id="filter-status" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-brandBlue focus:border-brandBlue p-2 transition">
+                                <option value="ALL">Todos</option>
+                                <option value="Disponible">Disponible</option>
+                                <option value="En Tribunal">En Tribunal</option>
+                                <option value="Reunión con Cliente">Reunión con Cliente</option>
+                                <option value="Almuerzo / Descanso">Almuerzo / Descanso</option>
+                                <option value="Fin de Turno">Fin de Turno</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Personal -->
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-left border-collapse min-w-[760px]">
+                        <thead>
+                            <tr class="bg-[#F8FAFC] text-xs text-slate-500 uppercase font-semibold border-b border-slate-100">
+                                <th class="px-6 py-4">ID & Empleado</th>
+                                <th class="px-6 py-4">Puesto / Cargo</th>
+                                <th class="px-6 py-4">Departamento</th>
+                                <th class="px-6 py-4">Jornada / Turno</th>
+                                <th class="px-6 py-4">Estado Actual</th>
+                                <th class="px-6 py-4 text-right">Acciones de Gestión</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-employees-body" class="text-sm text-slate-700 divide-y divide-slate-100">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer de la Tabla -->
+                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-2">
+                    <div id="table-employees-count">Mostrando empleados</div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>Haz clic en <strong>"Ver Marcaciones"</strong> para inspeccionar la tabla de tiempos y etiquetas del empleado.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SECCIÓN 2: HISTORIAL DE MARCACIONES POR EMPLEADO ESPECÍFICO -->
+        <!-- ============================================================ -->
+        <section id="section-marcaciones" class="space-y-6 pt-4 border-t border-slate-200">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Historial Detallado Individual
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Historial de Marcaciones de Asistencia</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">Registros biométricos y virtuales de entradas, pausas, salidas y cumplimiento de jornada.</p>
+                </div>
+
+                <!-- Selector Directo de Empleado -->
+                <div class="flex items-center gap-3 w-full sm:w-auto bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="select-employee-history" class="text-xs font-semibold text-slate-600 whitespace-nowrap pl-2">Seleccionar Empleado:</label>
+                    <select id="select-employee-history" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-medium rounded-md focus:ring-brandBlue focus:border-brandBlue p-2">
+                        <!-- Llenado dinámicamente por JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Ficha del Empleado Seleccionado -->
+            <div id="employee-profile-card" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6">
+                <!-- Se llena dinámicamente con la ficha del empleado -->
+            </div>
+
+            <!-- Leyenda Explicativa de Etiquetas de Color -->
+            <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-sm">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                    Guía de Etiquetas de Color (Estado de Marcación)
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-500">Puntual</span>
+                        <span class="text-slate-500">Ingreso a tiempo</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-500">Tardanza</span>
+                        <span class="text-slate-500">Retraso &gt; 5 min</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-600">Ausencia Just.</span>
+                        <span class="text-slate-500">Permiso o reposo</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-red-50 text-red-700 border border-red-600">Falta Injust.</span>
+                        <span class="text-slate-500">Sin aviso previo</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-500">Salida Antic.</span>
+                        <span class="text-slate-500">Antes del horario</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Marcaciones del Empleado -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <!-- Filtros del Historial -->
+                <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-base font-bold text-slate-800" id="history-table-title">Registros de Marcaciones</h3>
+                        <span class="text-xs bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full" id="history-badge-total">0 días</span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-semibold text-slate-500 whitespace-nowrap">Periodo:</label>
+                            <select id="filter-history-period" class="bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm rounded-lg focus:ring-brandBlue p-2">
+                                <option value="ALL">Todo el Historial</option>
+                                <option value="WEEK">Esta Semana</option>
+                                <option value="MONTH">Este Mes (Septiembre 2026)</option>
+                                <option value="LATE">Solo Retrasos e Incidentes</option>
+                            </select>
+                        </div>
+                        <button id="btn-add-punch" class="bg-brandBlue hover:bg-blue-900 text-white text-xs font-semibold py-2 px-3 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Registrar Marcación Manual
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla Responsive -->
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-left border-collapse min-w-[760px]">
+                        <thead>
+                            <tr class="bg-[#F8FAFC] text-xs text-slate-500 uppercase font-semibold border-b border-slate-100">
+                                <th class="px-6 py-4">Fecha</th>
+                                <th class="px-6 py-4">Entrada</th>
+                                <th class="px-6 py-4">Pausas / AUX</th>
+                                <th class="px-6 py-4">Salida</th>
+                                <th class="px-6 py-4 text-center">Horas Efectivas</th>
+                                <th class="px-6 py-4">Estado de Asistencia</th>
+                                <th class="px-6 py-4">Observaciones / Notas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-history-body" class="text-sm text-slate-700 divide-y divide-slate-100">
+                            <!-- Llenado dinámico por JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
+                    <div>Los datos de marcación son sincronizados automáticamente con el reloj biométrico TimeShift.</div>
+                    <div class="font-mono text-[11px] text-slate-400">TimeShift Attendance Engine v2.4</div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- MODAL 1: REGISTRAR NUEVO EMPLEADO (AGREGAR GENTE)           -->
+    <!-- ============================================================ -->
+    <div id="modal-add-employee" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all">
+            <!-- Header Modal -->
+            <div class="px-6 py-4 bg-[#111827] text-white flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold">
+                        +
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold">Registrar Nuevo Empleado</h3>
+                        <p class="text-xs text-slate-400">Ingresa los datos para dar de alta al colaborador</p>
+                    </div>
+                </div>
+                <button id="btn-close-modal-add" class="text-slate-400 hover:text-white text-xl font-bold p-1">&times;</button>
+            </div>
+
+            <!-- Formulario Modal -->
+            <form id="form-add-employee" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nombre Completo *</label>
+                    <input type="text" id="input-name" required placeholder="Ej. Elena Castillo" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue focus:border-brandBlue">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Correo Corporativo *</label>
+                        <input type="email" id="input-email" required placeholder="e.castillo@timeshift.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue focus:border-brandBlue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Cargo / Puesto *</label>
+                        <input type="text" id="input-role" required placeholder="Ej. Abogada Corporativa" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue focus:border-brandBlue">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Departamento *</label>
+                        <select id="input-department" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue focus:border-brandBlue">
+                            <option value="Operaciones">Operaciones</option>
+                            <option value="Asesoría Legal">Asesoría Legal</option>
+                            <option value="Personal Ejecutivo">Personal Ejecutivo</option>
+                            <option value="Estrategia">Estrategia</option>
+                            <option value="Administración">Administración</option>
+                            <option value="Tecnología">Tecnología</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Turno Asignado *</label>
+                        <select id="input-shift" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue focus:border-brandBlue">
+                            <option value="08:00 - 17:00">Diurno (08:00 - 17:00)</option>
+                            <option value="09:00 - 18:00">Intermedio (09:00 - 18:00)</option>
+                            <option value="07:00 - 16:00">Matutino (07:00 - 16:00)</option>
+                            <option value="13:00 - 21:00">Vespertino (13:00 - 21:00)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Estado Inicial *</label>
+                    <select id="input-state" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue focus:border-brandBlue">
+                        <option value="Disponible">Disponible (Activo)</option>
+                        <option value="En Tribunal">En Tribunal</option>
+                        <option value="Reunión con Cliente">Reunión con Cliente</option>
+                        <option value="Almuerzo / Descanso">Almuerzo / Descanso</option>
+                        <option value="Fin de Turno">Fin de Turno</option>
+                    </select>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" id="btn-cancel-add" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-[#e04c00] rounded-lg transition shadow-sm">Guardar y Dar de Alta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL 2: CONFIRMACIÓN PARA QUITAR/ELIMINAR EMPLEADO         -->
+    <!-- ============================================================ -->
+    <div id="modal-delete-employee" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all">
+            <div class="p-6 text-center">
+                <div class="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                    ⚠️
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">¿Dar de baja a este empleado?</h3>
+                <p class="text-xs sm:text-sm text-slate-500 mb-4 leading-relaxed">
+                    Estás a punto de quitar a <strong id="delete-employee-name" class="text-slate-800">Empleado</strong> del catálogo activo. Esta acción no puede revertirse.
+                </p>
+
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-left text-xs text-slate-600 mb-6">
+                    <div class="font-semibold text-slate-700 mb-1">Detalles del registro:</div>
+                    <div id="delete-employee-details" class="space-y-0.5"></div>
+                </div>
+
+                <div class="flex items-center justify-center gap-3">
+                    <button id="btn-cancel-delete" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition">Cancelar</button>
+                    <button id="btn-confirm-delete" class="px-5 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition shadow-sm">Confirmar Baja</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL 3: REGISTRAR MARCACIÓN MANUAL                         -->
+    <!-- ============================================================ -->
+    <div id="modal-add-punch" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="px-6 py-4 bg-[#111827] text-white flex justify-between items-center">
+                <div>
+                    <h3 class="text-base font-bold">Registrar Marcación Manual</h3>
+                    <p class="text-xs text-slate-400">Ajuste de asistencia o justificación para <span id="manual-punch-emp-name" class="font-semibold text-white"></span></p>
+                </div>
+                <button id="btn-close-modal-punch" class="text-slate-400 hover:text-white text-xl font-bold p-1">&times;</button>
+            </div>
+
+            <form id="form-add-punch" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Fecha *</label>
+                        <input type="date" id="punch-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Estado de Asistencia *</label>
+                        <select id="punch-status" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue">
+                            <option value="Puntual">Puntual (A tiempo)</option>
+                            <option value="Tardanza">Tardanza</option>
+                            <option value="Ausencia Justificada">Ausencia Justificada</option>
+                            <option value="Falta Injustificada">Falta Injustificada</option>
+                            <option value="Salida Anticipada">Salida Anticipada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Entrada</label>
+                        <input type="time" id="punch-checkin" value="08:00" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Pausa / Almuerzo</label>
+                        <input type="text" id="punch-break" value="01:00:00" placeholder="01:00:00" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Salida</label>
+                        <input type="time" id="punch-checkout" value="17:00" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Observación o Justificación</label>
+                    <textarea id="punch-notes" rows="2" placeholder="Ej. Atraso justificado por transporte, permiso personal otorgado..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue"></textarea>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" id="btn-cancel-punch" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-brandBlue hover:bg-blue-900 rounded-lg transition shadow-sm">Agregar al Historial</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast de Notificaciones Flotante -->
+    <div id="toast-notification" class="fixed bottom-5 right-5 z-50 bg-[#111827] text-white px-4 py-3 rounded-lg shadow-xl border border-slate-700 flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <span id="toast-icon">✅</span>
+        <span id="toast-message" class="text-xs sm:text-sm font-medium">Operación realizada con éxito</span>
+    </div>
+
+    <!-- Script de Gestión de Datos -->
+    <script src="js/gestion-datos.js"></script>
+</body>
+</html>

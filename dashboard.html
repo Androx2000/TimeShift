@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeShift - Panel de Administración</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Google Sans', 'system-ui', 'sans-serif'],
+                        mono: ['IBM Plex Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: "#FF5701",
+                        secondary: "#F6F6F1",
+                        success: "#16A34A",
+                        warning: "#D97706",
+                        danger: "#DC2626",
+                        surface: "#FFFFFF",
+                        textDark: "#111827",
+                        brandBlue: "#1e3a8a"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Hide scrollbar for nav */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Custom Toggle Switch Styles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #16A34A;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #16A34A;
+        }
+        .toggle-checkbox {
+            right: 0;
+            z-index: 1;
+            border-color: #e2e8f0;
+            transition: all 0.3s;
+        }
+        .toggle-label {
+            width: 2.5rem;
+            height: 1.25rem;
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-label:after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 1rem;
+            height: 1rem;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(1.25rem);
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-textDark min-h-screen flex flex-col">
+
+    <!-- Header Responsivo -->
+    <header class="bg-[#111827] text-white flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-8 py-4 sticky top-0 z-50 gap-4 md:gap-0">
+        <!-- Top Row Mobile (Logo + Avatar) -->
+        <div class="flex items-center justify-between w-full md:w-auto">
+            <div class="flex items-center gap-10">
+                <div class="flex items-baseline gap-3">
+                    <h1 class="text-xl font-bold tracking-tight">TimeShift</h1>
+                    <span class="inline-block whitespace-nowrap rounded-[0.27rem] bg-warning-100 px-[0.65em] pb-[0.25em] pt-[0.35em] text-center align-baseline text-[0.75em] font-bold leading-none text-warning-800 dark:bg-[#2e2005] dark:text-warning-500">Admin</span>
+                </div>
+            </div>
+            
+            <!-- Avatar Mobile Only -->
+            <div class="w-9 h-9 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 ring-2 ring-slate-700 md:hidden">
+                <img src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Juan+Pablo&backgroundColor=1e293b" alt="Juan Pablo" class="w-full h-full object-cover">
+            </div>
+        </div>
+
+        <!-- Navigation Scrollable -->
+        <div class="flex-1 w-full md:w-auto overflow-x-auto hide-scrollbar pb-1 md:pb-0">
+            <nav class="flex gap-6 md:gap-8 text-sm font-medium text-slate-400 whitespace-nowrap md:px-6" id="main-nav">
+                <a href="#" class="nav-link text-white transition-colors" data-target="view-monitor">Monitor en Tiempo Real</a>
+                <a href="#" class="nav-link hover:text-white transition-colors" data-target="view-reports">Reportes</a>
+                <a href="#" class="nav-link hover:text-white transition-colors" data-target="view-directory">Directorio de Personal</a>
+                <a href="#" class="nav-link hover:text-white transition-colors" data-target="view-settings">Configuración</a>
+                <a href="gestion de datos.html" class="hover:text-primary transition-colors text-amber-400 font-semibold flex items-center gap-1.5 pl-2 border-l border-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    Gestión de Datos
+                </a>
+            </nav>
+        </div>
+
+        <!-- Profile Desktop Only -->
+        <div class="items-center gap-4 hidden md:flex">
+            <div class="text-right">
+                <div class="text-sm font-semibold text-white">Juan Pablo</div>
+                <div class="text-xs text-slate-400">Operaciones Globales</div>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 ring-2 ring-slate-700">
+                <img src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Juan+Pablo&backgroundColor=1e293b" alt="Juan Pablo" class="w-full h-full object-cover">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto w-full">
+        
+        <!-- ============================== -->
+        <!-- VIEW 1: REAL-TIME MONITOR      -->
+        <!-- ============================== -->
+        <div id="view-monitor" class="view-section block">
+            <!-- Top Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
+                <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-sm font-medium text-slate-500 mb-2">Personal Activo</h3>
+                    <div class="text-3xl sm:text-4xl font-bold text-success">24</div>
+                </div>
+                <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-sm font-medium text-slate-500 mb-2">Fuera de la Oficina</h3>
+                    <div class="text-3xl sm:text-4xl font-bold text-warning">8</div>
+                </div>
+                <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-sm font-medium text-slate-500 mb-2">Ausente</h3>
+                    <div class="text-3xl sm:text-4xl font-bold text-danger">3</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                <!-- Table Section -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <div class="px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-100 flex justify-between items-center bg-white">
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800">Estado de Empleados en Tiempo Real</h2>
+                        <span class="text-xs font-semibold bg-slate-100 text-slate-500 px-2 py-1 rounded-md tracking-wide">En Vivo</span>
+                    </div>
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="bg-[#F8FAFC] text-xs text-slate-500 font-semibold border-b border-slate-100">
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 w-1/3">Nombre del Empleado</th>
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 w-1/4">Departamento</th>
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 w-1/4">Estado Actual</th>
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 text-right w-1/6">Tiempo en Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employee-table-body" class="text-sm text-slate-700 divide-y divide-slate-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                    <div class="px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-100 bg-white">
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800">Distribución de Tiempo</h2>
+                    </div>
+                    <div class="p-5 sm:p-8 flex-1 flex flex-col justify-center">
+                        <div class="relative h-48 sm:h-64 flex justify-center items-center mb-8">
+                            <canvas id="timeDistributionChart"></canvas>
+                            <!-- Center text overlay -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span class="text-[10px] sm:text-xs font-medium text-slate-500 mt-1">Personal Activo</span>
+                                <span class="text-3xl sm:text-4xl font-bold text-slate-800 leading-none mt-1">35</span>
+                            </div>
+                        </div>
+                        <div class="space-y-3 sm:space-y-4 px-2" id="chart-legend">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================== -->
+        <!-- VIEW 2: REPORTING              -->
+        <!-- ============================== -->
+        <div id="view-reports" class="view-section hidden space-y-6 sm:space-y-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Analíticas</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">Analiza el cumplimiento de horarios, uso de estados AUX y tendencias de rendimiento.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <select class="bg-white border border-slate-300 text-slate-700 text-sm rounded-md focus:ring-brandBlue focus:border-brandBlue block p-2 flex-1 sm:flex-none">
+                        <option>Últimos 7 Días</option>
+                        <option>Últimos 30 Días</option>
+                        <option>Este Mes</option>
+                    </select>
+                    <button class="bg-brandBlue hover:bg-red-800 text-white text-xs sm:text-sm font-medium py-2 px-3 sm:px-4 rounded-md transition flex items-center gap-1.5 sm:gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        PDF
+                    </button>
+                    <button class="bg-brandBlue hover:bg-green-800 text-white text-xs sm:text-sm font-medium py-2 px-3 sm:px-4 rounded-md transition flex items-center gap-1.5 sm:gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        XLSX
+                    </button>
+                </div>
+            </div>
+
+            <!-- Report KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-xs sm:text-sm font-medium text-slate-500 mb-2">Tasa Promedio de Cumplimiento</h3>
+                    <div class="flex items-baseline gap-3">
+                        <div class="text-2xl sm:text-3xl font-bold text-slate-800">94.2%</div>
+                        <span class="text-xs font-semibold text-success bg-green-50 px-2 py-0.5 rounded">+1.4%</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-xs sm:text-sm font-medium text-slate-500 mb-2">Total de Horas Productivas</h3>
+                    <div class="flex items-baseline gap-3">
+                        <div class="text-2xl sm:text-3xl font-bold text-slate-800">1,842h</div>
+                        <span class="text-xs font-semibold text-success bg-green-50 px-2 py-0.5 rounded">+5.2%</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-xs sm:text-sm font-medium text-slate-500 mb-2">Incidentes de Incumplimiento</h3>
+                    <div class="flex items-baseline gap-3">
+                        <div class="text-2xl sm:text-3xl font-bold text-slate-800">18</div>
+                        <span class="text-xs font-semibold text-success bg-green-50 px-2 py-0.5 rounded">-12%</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm border border-slate-200">
+                    <h3 class="text-xs sm:text-sm font-medium text-slate-500 mb-2">Duración Promedio Turno AUX</h3>
+                    <div class="flex items-baseline gap-3">
+                        <div class="text-2xl sm:text-3xl font-bold text-slate-800">48m</div>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                <!-- Bar Chart -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6 flex flex-col">
+                    <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 sm:mb-6">Tendencia Diaria de Cumplimiento</h3>
+                    <div class="flex-1 min-h-[200px] sm:min-h-[250px] relative w-full overflow-hidden">
+                        <canvas id="adherenceBarChart"></canvas>
+                    </div>
+                    <p class="text-[10px] sm:text-xs text-slate-500 mt-4 flex items-start sm:items-center gap-2 leading-tight">
+                        <svg class="w-4 h-4 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        El cumplimiento alcanzó un pico del 96% el viernes debido a retrasos minimizados en el tribunal.
+                    </p>
+                </div>
+                
+                <!-- AUX Breakdown -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 sm:mb-6">Desglose de Uso AUX</h3>
+                    <div class="space-y-5 sm:space-y-6">
+                        <!-- Progress Items -->
+                        <div>
+                            <div class="flex justify-between text-xs sm:text-sm mb-1.5">
+                                <span class="font-medium flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-brandBlue flex-shrink-0"></span>En Tribunal</span>
+                                <span class="text-slate-600 font-semibold">640h (45%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-brandBlue h-2 rounded-full" style="width: 45%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs sm:text-sm mb-1.5">
+                                <span class="font-medium flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-success flex-shrink-0"></span>Disponible</span>
+                                <span class="text-slate-600 font-semibold">420h (30%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-success h-2 rounded-full" style="width: 30%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs sm:text-sm mb-1.5">
+                                <span class="font-medium flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-warning flex-shrink-0"></span>Reunión con Cliente</span>
+                                <span class="text-slate-600 font-semibold">180h (15%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-warning h-2 rounded-full" style="width: 15%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs sm:text-sm mb-1.5">
+                                <span class="font-medium flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-400 flex-shrink-0"></span>Almuerzo / Descanso</span>
+                                <span class="text-slate-600 font-semibold">140h (10%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-slate-400 h-2 rounded-full" style="width: 10%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Out of Adherence Events -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-100 bg-white">
+                    <h2 class="text-base sm:text-lg font-bold text-slate-800">Eventos Recientes de Incumplimiento</h2>
+                </div>
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead>
+                            <tr class="bg-[#F8FAFC] text-xs text-slate-500 font-semibold border-b border-slate-100">
+                                <th class="px-4 sm:px-6 py-3 sm:py-4">Empleado</th>
+                                <th class="px-4 sm:px-6 py-3 sm:py-4">Estado Programado</th>
+                                <th class="px-4 sm:px-6 py-3 sm:py-4">Estado Real</th>
+                                <th class="px-4 sm:px-6 py-3 sm:py-4">Desviación</th>
+                                <th class="px-4 sm:px-6 py-3 sm:py-4 text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-700 divide-y divide-slate-100" id="adherence-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================== -->
+        <!-- VIEW 3: DIRECTORY              -->
+        <!-- ============================== -->
+        <div id="view-directory" class="view-section hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Directorio de Personal</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">Gestiona cuentas, departamentos, turnos y visualiza detalles de registros.</p>
+                </div>
+                <a href="gestion de datos.html?action=new" class="bg-brandBlue hover:bg-blue-800 text-white text-sm font-medium py-2 px-4 rounded-md transition w-full sm:w-auto text-center inline-block">+ Agregar Empleado</a>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <!-- Filters -->
+                <div class="px-4 sm:px-6 py-4 border-b border-slate-100 bg-white flex flex-col lg:flex-row gap-4 items-center justify-between">
+                    <div class="relative w-full lg:w-96">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" class="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-md focus:ring-brandBlue focus:border-brandBlue block w-full pl-10 p-2" placeholder="Buscar por nombre, departamento o estado...">
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <label class="text-xs sm:text-sm text-slate-500 font-medium whitespace-nowrap">Departamento:</label>
+                            <select class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-md focus:ring-brandBlue focus:border-brandBlue block p-2 w-full sm:w-auto">
+                                <option>Todos</option>
+                                <option>Operaciones</option>
+                                <option>Legal</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <label class="text-xs sm:text-sm text-slate-500 font-medium whitespace-nowrap">Estado:</label>
+                            <select class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-md focus:ring-brandBlue focus:border-brandBlue block p-2 w-full sm:w-auto">
+                                <option>Activo</option>
+                                <option>Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Directory Table -->
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-left border-collapse min-w-[700px]">
+                        <thead>
+                            <tr class="bg-[#F8FAFC] text-xs text-slate-500 font-semibold border-b border-slate-100">
+                                <th class="px-4 sm:px-6 py-3 sm:py-4">Nombre del Empleado</th>
+                                <th class="px-4 sm:px-6 py-3 sm:py-4">Departamento</th>
+                                <th class="px-4 sm:px-6 py-3 sm:py-4">Estado Actual</th>
+                                <th class="px-4 sm:px-6 py-3 sm:py-4">Tiempo en Estado</th>
+                                <th class="px-4 sm:px-6 py-3 sm:py-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="directory-table-body" class="text-sm text-slate-700 divide-y divide-slate-100">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================== -->
+        <!-- VIEW 4: SETTINGS               -->
+        <!-- ============================== -->
+        <div id="view-settings" class="view-section hidden space-y-6">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Configuración del Portal</h2>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Configura alertas del sistema, objetivos de turno y códigos de estado.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+                <!-- Global Config -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-8 space-y-6 sm:space-y-8">
+                    <h3 class="text-base sm:text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 sm:pb-4">Configuración Global de Turnos</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div>
+                            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Objetivo de Turno por Defecto</label>
+                            <input type="text" value="08:00:00" class="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-md focus:ring-brandBlue focus:border-brandBlue block w-full p-2.5">
+                        </div>
+                        <div>
+                            <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Límite de Sesión Inactiva (mins)</label>
+                            <input type="number" value="15" class="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-md focus:ring-brandBlue focus:border-brandBlue block w-full p-2.5">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 sm:space-y-6 pt-2">
+                        <h4 class="text-xs sm:text-sm font-bold text-brandBlue tracking-wide uppercase">Alertas de Cumplimiento</h4>
+                        
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <div class="font-medium text-sm text-slate-800">Alertas de Desviación</div>
+                                <div class="text-[10px] sm:text-xs text-slate-500 mt-1 leading-tight">Notifica al administrador instantáneamente cuando un empleado se mantiene fuera de cumplimiento por más de 10 minutos.</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 mt-1">
+                                <input type="checkbox" value="" class="sr-only peer toggle-checkbox" checked>
+                                <div class="toggle-label peer"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <div class="font-medium text-sm text-slate-800">Cierre de Sesión Forzado</div>
+                                <div class="text-[10px] sm:text-xs text-slate-500 mt-1 leading-tight">Fuerza el estado de fin de turno si hay inactividad por 30 minutos después de la duración objetivo.</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 mt-1">
+                                <input type="checkbox" value="" class="sr-only peer toggle-checkbox">
+                                <div class="toggle-label peer"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+                        <button class="bg-brandBlue hover:bg-blue-800 text-white text-sm font-medium py-2.5 sm:py-2 px-6 rounded-md transition w-full sm:w-auto text-center">Guardar Reglas</button>
+                        <button class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium py-2.5 sm:py-2 px-6 rounded-md transition w-full sm:w-auto text-center">Restablecer Valores</button>
+                    </div>
+                </div>
+
+                <!-- AUX State Manager -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-8 flex flex-col">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3 sm:pb-4 mb-4 sm:mb-6">
+                        <h3 class="text-base sm:text-lg font-bold text-slate-800">Gestor de Estados AUX</h3>
+                        <button class="text-xs sm:text-sm font-medium text-brandBlue hover:text-blue-800 transition">+ Agregar Código</button>
+                    </div>
+
+                    <div class="space-y-4 sm:space-y-6 flex-1">
+                        <!-- Items -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-success flex-shrink-0"></span>
+                                <span class="font-medium text-sm text-slate-800">Disponible</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input type="checkbox" class="sr-only peer toggle-checkbox" checked>
+                                <div class="toggle-label peer"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-brandBlue flex-shrink-0"></span>
+                                <span class="font-medium text-sm text-slate-800">En Tribunal</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input type="checkbox" class="sr-only peer toggle-checkbox" checked>
+                                <div class="toggle-label peer"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-warning flex-shrink-0"></span>
+                                <span class="font-medium text-sm text-slate-800">Reunión con Cliente</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input type="checkbox" class="sr-only peer toggle-checkbox" checked>
+                                <div class="toggle-label peer"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-slate-400 flex-shrink-0"></span>
+                                <span class="font-medium text-sm text-slate-800">Almuerzo / Descanso</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input type="checkbox" class="sr-only peer toggle-checkbox" checked>
+                                <div class="toggle-label peer"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-danger flex-shrink-0"></span>
+                                <span class="font-medium text-sm text-slate-800">Fin de Turno</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input type="checkbox" class="sr-only peer toggle-checkbox" checked>
+                                <div class="toggle-label peer"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Dashboard Logic -->
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
