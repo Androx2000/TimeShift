@@ -1,0 +1,32 @@
+/* Estilos base de TimeShift — complementa a Tailwind, no lo reemplaza */
+
+.reloj {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Selector de rol (login) ── */
+.rol-tecla {
+  cursor: pointer;
+}
+
+.rol-tecla-activa {
+  background-color: #FFFFFF;
+  color: #14202B;
+  box-shadow: 0 1px 2px rgba(20, 32, 43, 0.08);
+}
+
+/* ── Campos de formulario ── */
+.campo {
+  transition: border-color 150ms ease;
+}
+
+.campo:focus {
+  border-color: #C89B3C;
+}
+
+/* Respeta la preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
