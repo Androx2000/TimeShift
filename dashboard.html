@@ -1,63 +1,137 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimeShift | Dashboard Administrador</title>
+    <title>TimeShift - Panel de administración</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN (Obligatorio para la rúbrica) -->
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Configuración personalizada de Tailwind basada en tu manual de marca -->
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
                     colors: {
-                        corpBlue: '#1E3A8A',
-                        neutralGray: '#F3F4F6',
-                        successGreen: '#10B981',
-                        alertRed: '#EF4444',
+                        primary: "#FF5701",
+                        secondary: "#F6F6F1",
+                        success: "#16A34A",
+                        warning: "#D97706",
+                        danger: "#DC2626",
+                        surface: "#FFFFFF",
+                        textDark: "#111827",
                     }
                 }
             }
         }
     </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
-<body class="bg-neutralGray text-gray-800 font-sans p-6">
+<body class="bg-[#F8FAFC] text-textDark min-h-screen pb-12">
 
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow">
-            <h1 class="text-2xl font-bold text-corpBlue">TimeShift - Panel Gerencial</h1>
-            <button class="bg-alertRed text-white px-4 py-2 rounded hover:bg-red-700 transition" onclick="cerrarSesion()">Cerrar Sesión</button>
-        </header>
+    <!-- Header -->
+    <header class="bg-[#111827] text-white flex items-center justify-between px-8 py-4">
+        <div class="flex items-center gap-10">
+            <div class="flex items-baseline gap-3">
+                <h1 class="text-xl font-bold tracking-tight">TimeShift</h1>
+                <h2 class="text-lg font-semibold">Panel de administración</h2>
+            </div>
+            <nav class="hidden md:flex gap-8 text-sm font-medium text-slate-300">
+                <a href="#" class="text-white">Monitor en Tiempo Real</a>
+                <a href="#" class="hover:text-white transition-colors">Reportes</a>
+                <a href="#" class="hover:text-white transition-colors">Directorio de Personal</a>
+                <a href="#" class="hover:text-white transition-colors">Configuración</a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden sm:block">
+                <div class="text-sm font-semibold text-white">Juan Pablo</div>
+                <div class="text-xs text-slate-400">El mero macizo</div>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 ring-2 ring-slate-700">
+                <!-- Using DiceBear for demo purposes -->
+                <img src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Juan+Pablo&backgroundColor=1e293b" alt="Juan Pablo" class="w-full h-full object-cover">
+            </div>
+        </div>
+    </header>
 
-        <!-- Contenedor principal de la vista -->
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Tabla RTA (Real-Time Adherence) (2/3 del espacio) -->
-            <section class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-4 text-corpBlue">Monitoreo en Tiempo Real</h2>
-                <!-- Aquí insertarás la tabla dinámica con JS -->
-                <div id="contenedor-tabla-rta">
-                   <!-- Tabla simulada por ahora -->
+    <div class="p-4 sm:p-8 max-w-[1400px] mx-auto">
+        <!-- Top Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Active Staff -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-sm font-medium text-slate-500 mb-2">Active Staff</h3>
+                <div class="text-4xl font-bold text-success">24</div>
+            </div>
+            <!-- Out of Office -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-sm font-medium text-slate-500 mb-2">Out of Office</h3>
+                <div class="text-4xl font-bold text-warning">8</div>
+            </div>
+            <!-- Absent -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-sm font-medium text-slate-500 mb-2">Absent</h3>
+                <div class="text-4xl font-bold text-danger">3</div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Table Section -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white">
+                    <h2 class="text-lg font-bold text-slate-800">Real-Time Employee Status</h2>
+                    <span class="text-xs font-semibold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md tracking-wide">Live Feed</span>
                 </div>
-            </section>
-
-            <!-- Sección de Métricas y Gráficos (1/3 del espacio) -->
-            <section class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-4 text-corpBlue">Distribución Operativa</h2>
-                <!-- Contenedor para Chart.js -->
-                <div class="relative h-64">
-                    <canvas id="graficaEstados"></canvas>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-[#F8FAFC] text-xs text-slate-500 font-semibold border-b border-slate-100">
+                                <th class="px-6 py-4 w-1/3">Employee Name</th>
+                                <th class="px-6 py-4 w-1/4">Department</th>
+                                <th class="px-6 py-4 w-1/4">Current State</th>
+                                <th class="px-6 py-4 text-right w-1/6">Time in State</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employee-table-body" class="text-sm text-slate-700 divide-y divide-slate-100">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
                 </div>
-            </section>
+            </div>
 
-        </main>
+            <!-- Chart Section -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                <div class="px-6 py-5 border-b border-slate-100 bg-white">
+                    <h2 class="text-lg font-bold text-slate-800">Time Distribution</h2>
+                </div>
+                <div class="p-8 flex-1 flex flex-col justify-center">
+                    <div class="relative h-64 flex justify-center items-center mb-8">
+                        <canvas id="timeDistributionChart"></canvas>
+                        <!-- Center text overlay -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span class="text-xs font-medium text-slate-500 mt-1">Staff Active</span>
+                            <span class="text-4xl font-bold text-slate-800 leading-none mt-1">35</span>
+                        </div>
+                    </div>
+                    <!-- Legend -->
+                    <div class="space-y-4 px-2" id="chart-legend">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Script de la lógica de tu rama -->
+    <!-- Dashboard Logic -->
     <script src="js/dashboard.js"></script>
 </body>
 </html>
