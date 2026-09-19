@@ -40,82 +40,44 @@
 
 <body class="min-h-screen bg-pergamino font-base text-tinta antialiased">
 
-  <div class="grid min-h-screen lg:grid-cols-2">
+  <main class="flex min-h-screen items-center justify-center px-6 py-12 sm:px-10">
+    <div class="w-full max-w-sm">
 
-    <!-- ══ Panel izquierdo: identidad ══ -->
-    <aside class="relative hidden flex-col justify-between overflow-hidden bg-tinta px-12 py-10 text-pergamino lg:flex">
-      <div class="pointer-events-none absolute inset-0 opacity-[0.06]">
-        <svg viewBox="0 0 400 400" class="h-full w-full" preserveAspectRatio="xMidYMid slice">
-          <line x1="200" y1="30" x2="200" y2="370" stroke="currentColor" stroke-width="1"/>
-          <line x1="60" y1="90" x2="340" y2="90" stroke="currentColor" stroke-width="1"/>
-          <line x1="70" y1="90" x2="30" y2="150" stroke="currentColor" stroke-width="1"/>
-          <line x1="70" y1="90" x2="110" y2="150" stroke="currentColor" stroke-width="1"/>
-          <line x1="330" y1="90" x2="290" y2="150" stroke="currentColor" stroke-width="1"/>
-          <line x1="330" y1="90" x2="370" y2="150" stroke="currentColor" stroke-width="1"/>
-          <circle cx="200" cy="330" r="26" fill="none" stroke="currentColor" stroke-width="1"/>
-        </svg>
+      <div class="mb-8 text-center">
+        <p class="font-titular text-2xl text-tinta">TimeShift</p>
+        <p class="text-sm text-grafito">Oficina Jurídica Jovita Alvarado</p>
       </div>
 
-      <div class="relative">
-        <p class="font-titular text-2xl tracking-tight">TimeShift</p>
-        <p class="mt-1 text-sm text-tenue">Sistema de control de asistencia y turnos</p>
-      </div>
+      <div class="rounded-2xl bg-lienzo p-8 shadow-[0_1px_2px_rgba(20,32,43,0.06),0_12px_32px_rgba(20,32,43,0.08)] ring-1 ring-black/5">
 
-      <div class="relative max-w-sm">
-        <p class="font-titular text-3xl leading-snug text-pergamino">
-          Un solo acceso para el escritorio y la sala de audiencias.
-        </p>
-        <p class="mt-4 text-sm leading-relaxed text-tenue">
-          Oficina Jurídica Jovita Alvarado usa TimeShift para registrar asistencia,
-          dar seguimiento a la disponibilidad del equipo en tiempo real y
-          mantener el historial de turnos de cada colaborador.
-        </p>
-      </div>
+        <h1 class="font-titular text-2xl text-tinta">Iniciar sesión</h1>
+        <p class="mt-1 text-sm text-grafito">Ingrese sus credenciales para continuar.</p>
 
-      <p class="relative text-xs text-tenue/70">
-        © 2026 Oficina Jurídica Jovita Alvarado
-      </p>
-    </aside>
-
-    <!-- ══ Panel derecho: formulario ══ -->
-    <main class="flex items-center justify-center px-6 py-12 sm:px-10">
-      <div class="w-full max-w-sm">
-
-        <div class="mb-8 text-center lg:hidden">
-          <p class="font-titular text-2xl text-tinta">TimeShift</p>
-          <p class="text-sm text-grafito">Oficina Jurídica Jovita Alvarado</p>
+        <!-- Selector de rol -->
+        <div class="mt-6">
+          <span class="block text-sm text-grafito" id="rol-etiqueta">Ingresa como</span>
+          <div role="radiogroup" aria-labelledby="rol-etiqueta"
+               class="mt-2 grid grid-cols-2 gap-1 rounded-lg bg-pergamino p-1">
+            <button type="button" data-rol="trabajador"
+                    role="radio" aria-checked="true"
+                    class="rol-tecla rol-tecla-activa rounded-md px-3 py-2 text-sm font-medium transition">
+              Trabajador
+            </button>
+            <button type="button" data-rol="admin"
+                    role="radio" aria-checked="false"
+                    class="rol-tecla rounded-md px-3 py-2 text-sm font-medium text-grafito transition">
+              Administrador
+            </button>
+          </div>
         </div>
 
-        <div class="rounded-2xl bg-lienzo p-8 shadow-[0_1px_2px_rgba(20,32,43,0.06),0_12px_32px_rgba(20,32,43,0.08)] ring-1 ring-black/5">
-
-          <h1 class="font-titular text-2xl text-tinta">Iniciar sesión</h1>
-          <p class="mt-1 text-sm text-grafito">Ingrese sus credenciales para continuar.</p>
-
-          <!-- Selector de rol -->
-          <div class="mt-6">
-            <span class="block text-sm text-grafito" id="rol-etiqueta">Ingresa como</span>
-            <div role="radiogroup" aria-labelledby="rol-etiqueta"
-                 class="mt-2 grid grid-cols-2 gap-1 rounded-lg bg-pergamino p-1">
-              <button type="button" data-rol="trabajador"
-                      role="radio" aria-checked="true"
-                      class="rol-tecla rol-tecla-activa rounded-md px-3 py-2 text-sm font-medium transition">
-                Trabajador
-              </button>
-              <button type="button" data-rol="admin"
-                      role="radio" aria-checked="false"
-                      class="rol-tecla rounded-md px-3 py-2 text-sm font-medium text-grafito transition">
-                Administrador
-              </button>
-            </div>
+        <form id="form-login" class="mt-6 space-y-4" novalidate>
+          <div>
+            <label for="usuario" class="block text-sm text-grafito">Usuario</label>
+            <input id="usuario" name="usuario" type="text" autocomplete="username" required
+                   placeholder="nombre.apellido"
+                   class="campo mt-1 w-full rounded-lg border border-black/10 bg-lienzo px-3 py-2.5 text-tinta placeholder:text-grafito/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laton">
           </div>
-
-          <form id="form-login" class="mt-6 space-y-4" novalidate>
-            <div>
-              <label for="usuario" class="block text-sm text-grafito">Usuario</label>
-              <input id="usuario" name="usuario" type="text" autocomplete="username" required
-                     placeholder="nombre.apellido"
-                     class="campo mt-1 w-full rounded-lg border border-black/10 bg-lienzo px-3 py-2.5 text-tinta placeholder:text-grafito/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laton">
-            </div>
 
             <div>
               <div class="flex items-center justify-between">
@@ -148,16 +110,11 @@
                     class="w-full rounded-lg bg-tinta py-2.5 text-sm font-medium text-pergamino transition hover:bg-tintaAlta focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laton">
               Iniciar sesión
             </button>
-          </form>
-        </div>
-
-        <p class="mt-6 text-center text-xs text-grafito/70">
-          TimeShift v0.2 · Etapa 2 — DAW901
-        </p>
+        </form>
       </div>
-    </main>
 
-  </div>
+    </div>
+  </main>
 
   <script src="js/login.js"></script>
 </body>
