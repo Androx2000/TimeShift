@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es-SV">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Acceso al sistema TimeShift de la Oficina Jurídica Jovita Alvarado.">
+  <title>TimeShift · Iniciar sesión</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tinta:     '#14202B',
+            tintaAlta: '#1D2D3B',
+            laton:     '#C89B3C',
+            grafito:   '#5C6B78',
+            fallo:     '#B4553F',
+            acuerdo:   '#3F7558'
+          },
+          fontFamily: {
+            titular: ['"Source Serif 4"', 'Georgia', 'serif'],
+            base:    ['"IBM Plex Sans"', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body class="min-h-screen font-base text-tinta antialiased selection:bg-laton/20 selection:text-tinta">
+
+  <main class="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6">
+    <div class="w-full max-w-[400px]">
+
+      <!-- Encabezado tipo editorial -->
+      <header class="mb-8 text-center">
+        <p class="font-titular text-4xl font-semibold tracking-tight text-tinta">TimeShift</p>
+        <p class="mt-1.5 text-xs font-semibold tracking-widest uppercase text-grafito/75">Oficina Jurídica Jovita Alvarado</p>
+      </header>
+
+      <!-- Tarjeta con apariencia de vidrio -->
+      <div class="tarjeta-apple rounded-[2rem] p-8 sm:p-9">
+
+        <div class="space-y-1.5">
+          <h1 class="font-titular text-3xl font-semibold tracking-tight text-tinta">Iniciar sesión</h1>
+          <p class="text-sm text-grafito">Ingrese sus credenciales para continuar.</p>
+        </div>
+
+        <!-- Selector de rol con pastilla flotante y fisica de resorte -->
+        <div class="mt-7">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-grafito/90" id="rol-etiqueta">
+            Ingresa como
+          </label>
+
+          <div role="radiogroup" aria-labelledby="rol-etiqueta" class="control-segmentado mt-2.5">
+            <div id="pildora-deslizante" class="pildora-deslizante"></div>
+
+            <button type="button" data-rol="trabajador" id="btn-rol-trabajador"
+                    role="radio" aria-checked="true" class="segmento-btn activo">
+              Usuario
+            </button>
+            <button type="button" data-rol="admin" id="btn-rol-admin"
+                    role="radio" aria-checked="false" class="segmento-btn">
+              Admin
+            </button>
+          </div>
+        </div>
+
+        <form id="form-login" class="mt-6 space-y-4" novalidate>
+          <!-- Campo Usuario -->
+          <div>
+            <label for="usuario" class="block text-xs font-semibold uppercase tracking-wider text-grafito/90">
+              Usuario
+            </label>
+            <input id="usuario" name="usuario" type="text" autocomplete="username" required
+                   placeholder="nombre.apellido"
+                   class="campo-apple mt-1.5 w-full rounded-2xl px-4 py-3 text-sm text-tinta placeholder:text-grafito/45">
+          </div>
+
+          <!-- Campo Contraseña -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label for="clave" class="block text-xs font-semibold uppercase tracking-wider text-grafito/90">
+                Contraseña
+              </label>
+              <a href="#" class="text-xs text-grafito/80 hover:text-laton transition-colors">
+                ¿Olvidó su contraseña?
+              </a>
+            </div>
+            <div class="relative mt-1.5">
+              <input id="clave" name="clave" type="password" autocomplete="current-password" required
+                     placeholder="••••••••"
+                     class="campo-apple w-full rounded-2xl px-4 py-3 pr-11 text-sm text-tinta placeholder:text-grafito/45">
+              
+              <button type="button" id="alternar-clave"
+                      class="btn-ojo absolute inset-y-0 right-0 flex w-11 items-center justify-center text-grafito/60 hover:text-tinta"
+                      aria-label="Mostrar contraseña" aria-pressed="false">
+                <svg id="icono-ojo" viewBox="0 0 24 24" class="h-5 w-5 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Alerta de feedback con rebote -->
+          <div id="mensaje-login" role="alert" class="hidden"></div>
+
+          <!-- boton de envío con feedback  -->
+          <button type="submit" id="btn-submit"
+                  class="btn-principal mt-3 w-full rounded-2xl py-3.5 text-sm font-semibold text-white tracking-wide">
+            Iniciar sesión
+          </button>
+        </form>
+      </div>
+
+      <footer class="mt-8 text-center text-xs font-medium text-grafito/60">
+        &copy; 2026 TimeShift. Todos los derechos reservados.
+      </footer>
+
+    </div>
+  </main>
+
+  <script src="js/login.js"></script>
+</body>
+</html>
