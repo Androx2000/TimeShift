@@ -6,6 +6,7 @@
   <meta name="description" content="Acceso al sistema TimeShift de la Oficina Jurídica Jovita Alvarado.">
   <title>TimeShift · Iniciar sesión</title>
 
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
@@ -18,14 +19,10 @@
           colors: {
             tinta:     '#14202B',
             tintaAlta: '#1D2D3B',
-            borde:     '#2C4054',
-            pergamino: '#F2EDE4',
-            lienzo:    '#FFFFFF',
-            tenue:     '#9FB0BF',
-            grafito:   '#5C6B78',
             laton:     '#C89B3C',
+            grafito:   '#5C6B78',
             fallo:     '#B4553F',
-            acuerdo:   '#4F8A6B'
+            acuerdo:   '#3F7558'
           },
           fontFamily: {
             titular: ['"Source Serif 4"', 'Georgia', 'serif'],
@@ -38,118 +35,132 @@
   <link rel="stylesheet" href="css/estilos.css">
 </head>
 
-<body class="min-h-screen bg-pergamino font-base text-tinta antialiased">
+<body class="min-h-screen font-base text-tinta antialiased selection:bg-laton/20 selection:text-tinta">
 
-  <main class="flex min-h-screen items-center justify-center px-6 py-12 sm:px-10">
-    <div class="w-full max-w-sm">
+  <main class="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
+    <div class="w-full max-w-[400px]">
 
-      <div class="mb-8 text-center">
-        <p class="font-titular text-2xl text-tinta">TimeShift</p>
-        <p class="text-sm text-grafito">Oficina Jurídica Jovita Alvarado</p>
-      </div>
+      <!-- Encabezado tipo editorial con Reloj Analógico -->
+      <header class="mb-7 text-center">
 
-      <!-- Reloj analógico -->
-      <div class="mb-8 flex flex-col items-center">
-        <svg viewBox="0 0 200 200" class="h-36 w-36" aria-hidden="true">
-          <circle cx="100" cy="100" r="96" fill="#FFFFFF" stroke="#14202B" stroke-width="3"/>
-          <!-- Marcas de las 12 horas -->
-          <g stroke="#14202B" stroke-width="3" stroke-linecap="round">
-            <line x1="100" y1="14" x2="100" y2="26"/>
-            <line x1="100" y1="174" x2="100" y2="186"/>
-            <line x1="14" y1="100" x2="26" y2="100"/>
-            <line x1="174" y1="100" x2="186" y2="100"/>
-          </g>
-          <g stroke="#9FB0BF" stroke-width="1.5" stroke-linecap="round">
-            <line x1="100" y1="20" x2="100" y2="28" transform="rotate(30 100 100)"/>
-            <line x1="100" y1="20" x2="100" y2="28" transform="rotate(60 100 100)"/>
-            <line x1="100" y1="20" x2="100" y2="28" transform="rotate(120 100 100)"/>
-            <line x1="100" y1="20" x2="100" y2="28" transform="rotate(150 100 100)"/>
-            <line x1="100" y1="20" x2="100" y2="28" transform="rotate(210 100 100)"/>
-            <line x1="100" y1="20" x2="100" y2="28" transform="rotate(240 100 100)"/>
-            <line x1="100" y1="20" x2="100" y2="28" transform="rotate(300 100 100)"/>
-            <line x1="100" y1="20" x2="100" y2="28" transform="rotate(330 100 100)"/>
-          </g>
+        <!-- Reloj Analógico TimeShift -->
+        <div class="flex justify-center mb-3.5">
+          <div class="reloj-analogico" id="reloj-analogico" role="img" aria-label="Reloj analógico en tiempo real">
+            <div class="reloj-esfera">
+              <!-- Marcas horarias principales y secundarias -->
+              <span class="marca-reloj marca-12"></span>
+              <span class="marca-reloj marca-3"></span>
+              <span class="marca-reloj marca-6"></span>
+              <span class="marca-reloj marca-9"></span>
 
-          <!-- Agujas -->
-          <line id="aguja-hora"    x1="100" y1="100" x2="100" y2="58"  stroke="#14202B" stroke-width="5" stroke-linecap="round"/>
-          <line id="aguja-minuto"  x1="100" y1="100" x2="100" y2="34"  stroke="#14202B" stroke-width="3.5" stroke-linecap="round"/>
-          <line id="aguja-segundo" x1="100" y1="112" x2="100" y2="24"  stroke="#C89B3C" stroke-width="1.5" stroke-linecap="round"/>
+              <span class="punto-reloj punto-1"></span>
+              <span class="punto-reloj punto-2"></span>
+              <span class="punto-reloj punto-4"></span>
+              <span class="punto-reloj punto-5"></span>
+              <span class="punto-reloj punto-7"></span>
+              <span class="punto-reloj punto-8"></span>
+              <span class="punto-reloj punto-10"></span>
+              <span class="punto-reloj punto-11"></span>
 
-          <circle cx="100" cy="100" r="5" fill="#14202B"/>
-        </svg>
-        <p id="reloj-fecha" class="mt-3 text-sm text-grafito">Cargando fecha…</p>
-      </div>
+              <!-- Agujas -->
+              <div class="aguja aguja-hora" id="aguja-hora"></div>
+              <div class="aguja aguja-minuto" id="aguja-minuto"></div>
+              <div class="aguja aguja-segundo" id="aguja-segundo"></div>
 
-      <div class="rounded-2xl bg-lienzo p-8 shadow-[0_1px_2px_rgba(20,32,43,0.06),0_12px_32px_rgba(20,32,43,0.08)] ring-1 ring-black/5">
+              <!-- Eje central -->
+              <div class="reloj-eje"></div>
+            </div>
+          </div>
+        </div>
 
-        <h1 class="font-titular text-2xl text-tinta">Iniciar sesión</h1>
-        <p class="mt-1 text-sm text-grafito">Ingrese sus credenciales para continuar.</p>
+        <p class="font-titular text-4xl font-semibold tracking-tight text-tinta">TimeShift</p>
+        <p class="mt-1.5 text-xs font-semibold tracking-widest uppercase text-grafito/75">Oficina Jurídica Jovita Alvarado</p>
+      </header>
 
-        <!-- Selector de rol -->
-        <div class="mt-6">
-          <span class="block text-sm text-grafito" id="rol-etiqueta">Ingresa como</span>
-          <div role="radiogroup" aria-labelledby="rol-etiqueta"
-               class="selector-rol relative mt-2 grid grid-cols-2 gap-1 rounded-lg bg-pergamino p-1">
-            <span id="pildora-deslizante" class="pildora absolute inset-y-1 rounded-md bg-lienzo shadow-sm" aria-hidden="true"></span>
-            <button type="button" id="btn-rol-trabajador"
-                    role="radio" aria-checked="true"
-                    class="rol-tecla activo relative z-10 rounded-md px-3 py-2 text-sm font-medium transition">
-              Trabajador
+      <!-- Tarjeta con apariencia de vidrio -->
+      <div class="tarjeta-apple rounded-[2rem] p-8 sm:p-9">
+
+        <div class="space-y-1.5">
+          <h1 class="font-titular text-3xl font-semibold tracking-tight text-tinta">Iniciar sesión</h1>
+          <p class="text-sm text-grafito">Ingrese sus credenciales para continuar.</p>
+        </div>
+
+        <!-- Selector de rol con pastilla flotante y física de resorte -->
+        <div class="mt-7">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-grafito/90" id="rol-etiqueta">
+            Ingresa como
+          </label>
+
+          <div role="radiogroup" aria-labelledby="rol-etiqueta" class="control-segmentado mt-2.5">
+            <div id="pildora-deslizante" class="pildora-deslizante"></div>
+
+            <button type="button" data-rol="trabajador" id="btn-rol-trabajador"
+                    role="radio" aria-checked="true" class="segmento-btn activo">
+              Usuario
             </button>
-            <button type="button" id="btn-rol-admin"
-                    role="radio" aria-checked="false"
-                    class="rol-tecla relative z-10 rounded-md px-3 py-2 text-sm font-medium text-grafito transition">
-              Administrador
+            <button type="button" data-rol="admin" id="btn-rol-admin"
+                    role="radio" aria-checked="false" class="segmento-btn">
+              Admin
             </button>
           </div>
         </div>
 
         <form id="form-login" class="mt-6 space-y-4" novalidate>
+          <!-- Campo Usuario -->
           <div>
-            <label for="usuario" class="block text-sm text-grafito">Usuario</label>
+            <label for="usuario" class="block text-xs font-semibold uppercase tracking-wider text-grafito/90">
+              Usuario
+            </label>
             <input id="usuario" name="usuario" type="text" autocomplete="username" required
                    placeholder="nombre.apellido"
-                   class="campo mt-1 w-full rounded-lg border border-black/10 bg-lienzo px-3 py-2.5 text-tinta placeholder:text-grafito/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laton">
+                   class="campo-apple mt-1.5 w-full rounded-2xl px-4 py-3 text-sm text-tinta placeholder:text-grafito/45">
           </div>
 
-            <div>
-              <div class="flex items-center justify-between">
-                <label for="clave" class="block text-sm text-grafito">Contraseña</label>
-                <a href="#" class="text-xs text-grafito underline decoration-black/20 underline-offset-2 hover:text-laton">
-                  ¿Olvidó su contraseña?
-                </a>
-              </div>
-              <div class="relative mt-1">
-                <input id="clave" name="clave" type="password" autocomplete="current-password" required
-                       placeholder="••••••••"
-                       class="campo w-full rounded-lg border border-black/10 bg-lienzo px-3 py-2.5 pr-11 text-tinta placeholder:text-grafito/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laton">
-                <button type="button" id="alternar-clave"
-                        class="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-grafito hover:text-tinta"
-                        aria-label="Mostrar contraseña" aria-pressed="false">
-                  <svg id="icono-ojo" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6">
-                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </button>
-              </div>
+          <!-- Campo Contraseña -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label for="clave" class="block text-xs font-semibold uppercase tracking-wider text-grafito/90">
+                Contraseña
+              </label>
+              <a href="#" class="text-xs text-grafito/80 hover:text-laton transition-colors">
+                ¿Olvidó su contraseña?
+              </a>
             </div>
+            <div class="relative mt-1.5">
+              <input id="clave" name="clave" type="password" autocomplete="current-password" required
+                     placeholder="••••••••"
+                     class="campo-apple w-full rounded-2xl px-4 py-3 pr-11 text-sm text-tinta placeholder:text-grafito/45">
+              
+              <button type="button" id="alternar-clave"
+                      class="btn-ojo absolute inset-y-0 right-0 flex w-11 items-center justify-center text-grafito/60 hover:text-tinta"
+                      aria-label="Mostrar contraseña" aria-pressed="false">
+                <svg id="icono-ojo" viewBox="0 0 24 24" class="h-5 w-5 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
 
-            <p id="mensaje-login" role="alert"
-               class="hidden rounded-lg border border-fallo/30 bg-fallo/10 px-3 py-2 text-sm text-fallo">
-              Usuario o contraseña incorrectos.
-            </p>
+          <!-- Alerta de feedback con rebote -->
+          <div id="mensaje-login" role="alert" class="hidden"></div>
 
-            <button type="submit"
-                    class="w-full rounded-lg bg-tinta py-2.5 text-sm font-medium text-pergamino transition hover:bg-tintaAlta focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laton">
-              Iniciar sesión
-            </button>
+          <!-- Botón de envío con feedback -->
+          <button type="submit" id="btn-submit"
+                  class="btn-principal mt-3 w-full rounded-2xl py-3.5 text-sm font-semibold text-white tracking-wide">
+            Iniciar sesión
+          </button>
         </form>
       </div>
+
+      <footer class="mt-8 text-center text-xs font-medium text-grafito/60">
+        &copy; 2026 TimeShift. Todos los derechos reservados.
+      </footer>
 
     </div>
   </main>
 
-  <script src="js/reloj.js"></script>
+  <!-- Módulos de autenticación y lógica de login -->
   <script src="js/auth.js"></script>
   <script src="js/login.js"></script>
 </body>
