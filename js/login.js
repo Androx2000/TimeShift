@@ -7,50 +7,6 @@
  *   <script src="js/auth.js"></script>
  *   <script src="js/login.js"></script>
  */
-document.addEventListener('DOMContentLoaded', () => {
-  // Reloj Analógico TimeShift (Movimiento continuo fluido)
-  const agujaHora = document.getElementById('aguja-hora');
-  const agujaMinuto = document.getElementById('aguja-minuto');
-  const agujaSegundo = document.getElementById('aguja-segundo');
-
-  const prefiereReduccionMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function actualizarReloj() {
-    const ahora = new Date();
-    const ms = ahora.getMilliseconds();
-    const s = ahora.getSeconds();
-    const m = ahora.getMinutes();
-    const h = ahora.getHours() % 12;
-
-    const segundoFraccional = prefiereReduccionMovimiento ? s : s + ms / 1000;
-    const minutoFraccional = m + segundoFraccional / 60;
-    const horaFraccional = h + minutoFraccional / 60;
-
-    const degSegundo = segundoFraccional * 6;
-    const degMinuto = minutoFraccional * 6;
-    const degHora = horaFraccional * 30;
-
-    if (agujaSegundo) agujaSegundo.style.transform = `rotate(${degSegundo}deg)`;
-    if (agujaMinuto)  agujaMinuto.style.transform  = `rotate(${degMinuto}deg)`;
-    if (agujaHora)    agujaHora.style.transform    = `rotate(${degHora}deg)`;
-
-    if (!prefiereReduccionMovimiento) {
-      requestAnimationFrame(actualizarReloj);
-    }
-  }
-
-  if (prefiereReduccionMovimiento) {
-    setInterval(actualizarReloj, 1000);
-    actualizarReloj();
-  } else {
-    requestAnimationFrame(actualizarReloj);
-  }
-
-  // 1. Selector de Rol con pastilla deslizante física
-  const pildora = document.getElementById('pildora-deslizante');
-  const btnUsuario = document.getElementById('btn-rol-trabajador');
-  const btnAdmin = document.getElementById('btn-rol-admin');
-  let rolSeleccionado = 'trabajador';
 
 // El diseño usa "trabajador" para el toggle visual; internamente los
 // usuarios se guardan con rol "empleado" (ver DEFAULT_USERS en auth.js).
