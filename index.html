@@ -37,11 +37,42 @@
 
 <body class="min-h-screen font-base text-tinta antialiased selection:bg-laton/20 selection:text-tinta">
 
-  <main class="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6">
+  <main class="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
     <div class="w-full max-w-[400px]">
 
-      <!-- Encabezado tipo editorial -->
-      <header class="mb-8 text-center">
+      <!-- Encabezado tipo editorial con Reloj Analógico -->
+      <header class="mb-7 text-center">
+
+        <!-- Reloj Analógico TimeShift -->
+        <div class="flex justify-center mb-3.5">
+          <div class="reloj-analogico" id="reloj-analogico" role="img" aria-label="Reloj analógico en tiempo real">
+            <div class="reloj-esfera">
+              <!-- Marcas horarias principales y secundarias -->
+              <span class="marca-reloj marca-12"></span>
+              <span class="marca-reloj marca-3"></span>
+              <span class="marca-reloj marca-6"></span>
+              <span class="marca-reloj marca-9"></span>
+
+              <span class="punto-reloj punto-1"></span>
+              <span class="punto-reloj punto-2"></span>
+              <span class="punto-reloj punto-4"></span>
+              <span class="punto-reloj punto-5"></span>
+              <span class="punto-reloj punto-7"></span>
+              <span class="punto-reloj punto-8"></span>
+              <span class="punto-reloj punto-10"></span>
+              <span class="punto-reloj punto-11"></span>
+
+              <!-- Agujas -->
+              <div class="aguja aguja-hora" id="aguja-hora"></div>
+              <div class="aguja aguja-minuto" id="aguja-minuto"></div>
+              <div class="aguja aguja-segundo" id="aguja-segundo"></div>
+
+              <!-- Eje central -->
+              <div class="reloj-eje"></div>
+            </div>
+          </div>
+        </div>
+
         <p class="font-titular text-4xl font-semibold tracking-tight text-tinta">TimeShift</p>
         <p class="mt-1.5 text-xs font-semibold tracking-widest uppercase text-grafito/75">Oficina Jurídica Jovita Alvarado</p>
       </header>
@@ -54,7 +85,7 @@
           <p class="text-sm text-grafito">Ingrese sus credenciales para continuar.</p>
         </div>
 
-        <!-- Selector de rol con pastilla flotante y fisica de resorte -->
+        <!-- Selector de rol con pastilla flotante y física de resorte -->
         <div class="mt-7">
           <label class="block text-xs font-semibold uppercase tracking-wider text-grafito/90" id="rol-etiqueta">
             Ingresa como
@@ -114,7 +145,7 @@
           <!-- Alerta de feedback con rebote -->
           <div id="mensaje-login" role="alert" class="hidden"></div>
 
-          <!-- boton de envío con feedback  -->
+          <!-- Botón de envío con feedback -->
           <button type="submit" id="btn-submit"
                   class="btn-principal mt-3 w-full rounded-2xl py-3.5 text-sm font-semibold text-white tracking-wide">
             Iniciar sesión
@@ -128,6 +159,8 @@
 
     </div>
   </main>
+
+  <!-- Módulos de autenticación y lógica de login -->
   <script src="js/auth.js"></script>
   <script src="js/login.js"></script>
 </body>
