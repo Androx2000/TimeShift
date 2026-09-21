@@ -3,7 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimeShift · Employee Portal</title>
+    <title>TimeShift - Portal del Empleado</title>
+
+    <!-- AUTH CHECK & SAFE LOGOUT: Guard strictly before external assets -->
+    <script>
+        (function() {
+            try {
+                const user = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user');
+                if (!user) {
+                    try {
+                        sessionStorage.removeItem('ts_user');
+                        sessionStorage.removeItem('ts_role');
+                        sessionStorage.removeItem('ts_name');
+                        sessionStorage.removeItem('ts_cargo');
+                        localStorage.removeItem('ts_user');
+                        localStorage.removeItem('ts_role');
+                        localStorage.removeItem('ts_name');
+                        localStorage.removeItem('ts_cargo');
+                        localStorage.removeItem('timeshift_session');
+                    } catch(e) {}
+                    window.location.replace('index.html');
+                }
+            } catch(e) {
+                window.location.replace('index.html');
+            }
+        })();
+
+        window.tsLogout = function() {
+            try {
+                sessionStorage.clear();
+                localStorage.removeItem('ts_user');
+                localStorage.removeItem('ts_role');
+                localStorage.removeItem('ts_name');
+                localStorage.removeItem('ts_cargo');
+                localStorage.removeItem('timeshift_session');
+            } catch(e) {}
+            window.location.replace('index.html');
+        };
+    </script>
     
     <!-- Google Fonts (Google Sans, Inter, IBM Plex Mono) matching project standards -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,7 +96,7 @@
         }
 
         .aux-btn:active {
-            transform: translateY(1px);
+            transform: scale(0.97);
         }
 
         .aux-btn.is-active {
@@ -89,6 +126,10 @@
             background: #cbd5e1;
             border-radius: 9999px;
         }
+
+        /* Bounce Animation from Index */
+        .bouncy-btn { transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bouncy-btn:active { transform: scale(0.95); }
     </style>
 </head>
 
@@ -96,51 +137,50 @@
 
     <!-- Top Navigation Bar -->
     <header class="bg-white border-b border-slate-200/90 sticky top-0 z-40 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-        <div class="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3.5 flex items-center justify-between gap-4">
+        <div class="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5 flex items-center justify-between gap-3 sm:gap-4">
             
             <!-- Brand & Badge -->
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="flex items-center gap-3 group">
-                    <span class="text-2xl font-black tracking-tight text-[#14202B] group-hover:text-brandBlue transition-colors">TimeShift</span>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="index.html" class="flex items-center gap-2 sm:gap-3 group">
+                    <span class="text-xl sm:text-2xl font-black tracking-tight text-[#14202B] group-hover:text-brandBlue transition-colors">TimeShift</span>
                 </a>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EEF2F6] text-[#2563EB] tracking-wide">
-                    Employee Portal
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-[#EEF2F6] text-[#2563EB] tracking-wide">
+                    Portal del Empleado
                 </span>
             </div>
 
             <!-- Right Info Cluster: Clock, Date, Weather, Profile -->
-            <div class="flex items-center gap-3 sm:gap-6 text-sm">
+            <div class="flex items-center gap-2.5 sm:gap-6 text-sm">
                 
                 <!-- Live Digital Time -->
-                <div id="live-clock" class="font-bold text-slate-800 text-sm sm:text-base tracking-tight font-mono">
+                <div id="live-clock" class="font-bold text-slate-800 text-xs sm:text-base tracking-tight font-mono bg-slate-100 sm:bg-transparent px-2 sm:px-0 py-1 sm:py-0 rounded">
                     09:42 AM
                 </div>
 
                 <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
 
                 <!-- Live Date -->
-                <div id="live-date" class="text-slate-500 font-medium text-xs sm:text-sm hidden sm:block">
-                    Friday, September 18, 2026
+                <div id="live-date" class="text-slate-500 font-medium text-xs sm:text-sm hidden md:block">
+                    Viernes, 18 de Septiembre 2026
                 </div>
 
-                <div class="h-4 w-px bg-slate-200 hidden md:block"></div>
+                <div class="h-4 w-px bg-slate-200 hidden lg:block"></div>
 
                 <!-- Weather Pill -->
-                <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50/80 border border-amber-200/50 text-xs font-semibold text-slate-700">
+                <div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50/80 border border-amber-200/50 text-xs font-semibold text-slate-700">
                     <span class="text-amber-500 text-sm">☀️</span>
-                    <span>72°F</span>
+                    <span>25°C</span>
                 </div>
 
                 <!-- User Profile & Quick Actions -->
-                <div class="flex items-center gap-3 pl-2 sm:border-l sm:border-slate-200">
+                <div class="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
                     <div class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden ring-2 ring-slate-100 flex-shrink-0">
                         <img id="user-avatar" 
-                             src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150" 
-                             alt="Sarah Connor" 
-                             class="w-full h-full object-cover"
-                             onerror="this.src='https://api.dicebear.com/10.x/pixelbot/svg?seed=Sarah+Connor&backgroundColor=e2e8f0'">
+                             src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Empleado&backgroundColor=e2e8f0" 
+                             alt="Avatar" 
+                             class="w-full h-full object-cover">
                     </div>
-                    <div class="hidden lg:flex flex-col text-left">
+                    <div class="hidden md:flex flex-col text-left">
                         <span id="user-name" class="font-semibold text-slate-800 text-xs sm:text-sm leading-tight">Sarah Connor</span>
                         <span id="user-role-label" class="text-[10px] text-slate-400 font-medium">Operaciones</span>
                     </div>
@@ -148,9 +188,13 @@
                     <!-- Logout / Navigation action -->
                     <button id="btn-logout" 
                             title="Cerrar sesión" 
-                            class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors ml-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            class="bouncy-btn text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors ml-0.5 sm:ml-1"
+                            onclick="tsLogout();">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-logout" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+                            <path d="M9 12h12l-3 -3" />
+                            <path d="M18 15l3 -3" />
                         </svg>
                     </button>
                 </div>
@@ -160,109 +204,114 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 max-w-[1360px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col justify-start">
+    <main class="flex-1 max-w-[1360px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 flex flex-col justify-start">
         
         <!-- SECTION 1: AUX Code Selector Header & Buttons -->
-        <section class="w-full mb-6">
-            <h2 class="text-sm sm:text-base font-bold text-slate-700 tracking-tight mb-3 sm:mb-4">
-                Select Your Active Work State (AUX Code)
+        <section class="w-full mb-4 sm:mb-6">
+            <h2 class="text-xs sm:text-base font-bold text-slate-700 tracking-tight mb-2.5 sm:mb-4">
+                Selecciona tu Estado de Trabajo (Código AUX)
             </h2>
 
-            <!-- 5 AUX Buttons Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 w-full" id="aux-buttons-container">
+            <!-- 6 AUX Buttons Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4 w-full" id="aux-buttons-container">
                 
-                <!-- 1. Available -->
+                <!-- 1. Disponible -->
                 <button type="button" 
                         data-state-id="available" 
-                        data-state-label="Available"
+                        data-state-label="Disponible"
                         data-color="#00A669"
-                        class="aux-btn w-full bg-[#00A669] hover:bg-[#00935c] text-white rounded-xl sm:rounded-2xl h-14 sm:h-16 flex items-center justify-center font-bold text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A669]">
-                    Available
+                        class="aux-btn w-full bg-[#00A669] hover:bg-[#00935c] text-white rounded-xl sm:rounded-2xl h-13 sm:h-16 flex items-center justify-center font-bold text-xs sm:text-sm md:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A669] p-2 text-center">
+                    Disponible
                 </button>
 
-                <!-- 2. At Court (Active in Mockup) -->
+                <!-- 2. En Tribunal -->
                 <button type="button" 
                         data-state-id="court" 
-                        data-state-label="At Court"
+                        data-state-label="En Tribunal"
                         data-color="#1D3B8B"
-                        class="aux-btn is-active w-full bg-[#1D3B8B] hover:bg-[#183277] text-white rounded-xl sm:rounded-2xl h-14 sm:h-16 flex items-center justify-center font-bold text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1D3B8B]">
-                    At Court
+                        class="aux-btn w-full bg-[#1D3B8B] hover:bg-[#183277] text-white rounded-xl sm:rounded-2xl h-13 sm:h-16 flex items-center justify-center font-bold text-xs sm:text-sm md:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1D3B8B] p-2 text-center">
+                    En Tribunal
                 </button>
 
-                <!-- 3. Client Meeting -->
+                <!-- 3. Reunión con Cliente -->
                 <button type="button" 
                         data-state-id="meeting" 
-                        data-state-label="Client Meeting"
+                        data-state-label="Reunión con Cliente"
                         data-color="#F59E0B"
-                        class="aux-btn w-full bg-[#F59E0B] hover:bg-[#e08e04] text-white rounded-xl sm:rounded-2xl h-14 sm:h-16 flex items-center justify-center font-bold text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F59E0B]">
-                    Client Meeting
+                        class="aux-btn w-full bg-[#F59E0B] hover:bg-[#e08e04] text-white rounded-xl sm:rounded-2xl h-13 sm:h-16 flex items-center justify-center font-bold text-xs sm:text-sm md:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F59E0B] p-2 text-center leading-tight">
+                    Reunión con Cliente
                 </button>
 
-                <!-- 4. Lunch -->
+                <!-- 4. Almuerzo -->
                 <button type="button" 
                         data-state-id="lunch" 
-                        data-state-label="Lunch"
+                        data-state-label="Almuerzo"
                         data-color="#64748B"
-                        class="aux-btn w-full bg-[#64748B] hover:bg-[#526075] text-white rounded-xl sm:rounded-2xl h-14 sm:h-16 flex items-center justify-center font-bold text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#64748B]">
-                    Lunch
+                        class="aux-btn w-full bg-[#64748B] hover:bg-[#526075] text-white rounded-xl sm:rounded-2xl h-13 sm:h-16 flex items-center justify-center font-bold text-xs sm:text-sm md:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#64748B] p-2 text-center">
+                    Almuerzo
                 </button>
 
-                <!-- 5. End of Shift -->
+                <!-- 5. Break -->
+                <button type="button" 
+                        data-state-id="break" 
+                        data-state-label="Break"
+                        data-color="#8B5CF6"
+                        class="aux-btn w-full bg-[#8B5CF6] hover:bg-[#7c3aed] text-white rounded-xl sm:rounded-2xl h-13 sm:h-16 flex items-center justify-center font-bold text-xs sm:text-sm md:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B5CF6] p-2 text-center">
+                    Break
+                </button>
+
+                <!-- 6. Fin de Turno -->
                 <button type="button" 
                         data-state-id="end" 
-                        data-state-label="End of Shift"
+                        data-state-label="Fin de Turno"
                         data-color="#EF4444"
-                        class="aux-btn w-full bg-[#EF4444] hover:bg-[#dc2626] text-white rounded-xl sm:rounded-2xl h-14 sm:h-16 flex items-center justify-center font-bold text-sm sm:text-base shadow-sm col-span-2 sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#EF4444]">
-                    End of Shift
+                        class="aux-btn w-full bg-[#EF4444] hover:bg-[#dc2626] text-white rounded-xl sm:rounded-2xl h-13 sm:h-16 flex items-center justify-center font-bold text-xs sm:text-sm md:text-base shadow-sm col-span-2 sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#EF4444] p-2 text-center">
+                    Fin de Turno
                 </button>
 
             </div>
         </section>
 
         <!-- SECTION 2: Center Timer Card (Current State Duration) -->
-        <section class="w-full bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 lg:p-12 mb-6 text-center transition-all">
+        <section class="w-full bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-8 lg:p-12 mb-4 sm:mb-6 text-center transition-all">
             
             <!-- State Duration Label (Dynamic uppercase) -->
             <p id="current-state-heading" class="text-xs sm:text-sm font-bold text-[#1D3B8B] uppercase tracking-wider mb-2 sm:mb-3">
-                CURRENT STATE DURATION (AT COURT)
+                TIEMPO EN ESTADO ACTUAL (DISPONIBLE)
             </p>
 
             <!-- Huge Stopwatch Timer -->
-            <div id="state-timer-display" class="font-mono text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight my-2 select-none">
-                00:15:22
+            <div id="state-timer-display" class="font-mono text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-slate-900 tracking-tight my-2 select-none">
+                00:00:00
             </div>
 
             <!-- Subtext: Total Active Session & Target -->
-            <p class="text-xs sm:text-sm text-slate-400 font-medium mt-2 flex items-center justify-center flex-wrap gap-1.5 sm:gap-2">
-                <span>Total active session: <strong id="session-timer-display" class="font-mono font-semibold text-slate-600">01:15:22</strong></span>
+            <p class="text-xs sm:text-sm text-slate-400 font-medium mt-2 sm:mt-3 flex items-center justify-center flex-wrap gap-1.5 sm:gap-2">
+                <span>Sesión activa total: <strong id="session-timer-display" class="font-mono font-semibold text-slate-600">00:00:00</strong></span>
                 <span class="text-slate-300">•</span>
-                <span>Shift scheduled target: <strong class="font-mono font-semibold text-slate-600" id="target-shift-display">08:00:00</strong></span>
+                <span>Jornada objetivo: <strong class="font-mono font-semibold text-slate-600" id="target-shift-display">08:00:00</strong></span>
             </p>
         </section>
 
         <!-- SECTION 3: Today's History Card -->
-        <section class="w-full bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-8 flex flex-col">
+        <section class="w-full bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 lg:p-8 flex flex-col">
             
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                    Today's History
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 class="text-sm sm:text-lg font-bold text-slate-900 tracking-tight">
+                    Historial de Hoy
                 </h3>
                 <div class="flex items-center gap-2">
                     <span id="history-counter-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
-                        4 registros
+                        0 registros
                     </span>
-                    <button id="btn-reset-mockup" 
-                            title="Restablecer datos originales del mockup"
-                            class="text-[11px] font-semibold text-slate-400 hover:text-brandBlue transition-colors px-2 py-0.5 rounded hover:bg-slate-50">
-                        Reiniciar
-                    </button>
                 </div>
             </div>
 
             <!-- Table Header Bar -->
-            <div class="w-full bg-[#F1F5F9] rounded-lg px-6 py-2.5 flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                <div class="w-1/3 sm:w-1/4">Time</div>
-                <div class="w-2/3 sm:w-3/4 text-left">State Changed To</div>
+            <div class="w-full bg-[#F1F5F9] rounded-lg px-4 sm:px-6 py-2.5 flex items-center justify-between text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <div class="w-1/4 sm:w-1/5">Hora</div>
+                <div class="w-2/4 sm:w-2/5 text-left">Cambio de Estado</div>
+                <div class="w-1/4 sm:w-2/5 text-right">Duración</div>
             </div>
 
             <!-- History Entries List Container -->
@@ -279,8 +328,7 @@
         &copy; 2026 TimeShift. Sistema de Control de Asistencia y Gestión de Turnos.
     </footer>
 
-    <!-- Core Auth & Portal Logic Scripts -->
-    <script src="js/auth.js"></script>
+    <!-- Core Portal Logic Script -->
     <script src="js/portal.js"></script>
 </body>
 </html>

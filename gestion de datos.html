@@ -4,15 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TimeShift - Gestión de Datos y Marcaciones</title>
+    <!-- AUTH CHECK & SAFE LOGOUT: Guard strictly before external assets -->
+    <script>
+        (function() {
+            try {
+                const user = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user');
+                const role = sessionStorage.getItem('ts_role') || localStorage.getItem('ts_role');
+                if (!user || !role || role !== 'admin') {
+                    try {
+                        sessionStorage.removeItem('ts_user');
+                        sessionStorage.removeItem('ts_role');
+                        sessionStorage.removeItem('ts_name');
+                        sessionStorage.removeItem('ts_cargo');
+                        localStorage.removeItem('ts_user');
+                        localStorage.removeItem('ts_role');
+                        localStorage.removeItem('ts_name');
+                        localStorage.removeItem('ts_cargo');
+                        localStorage.removeItem('timeshift_session');
+                    } catch(e) {}
+                    window.location.replace('index.html');
+                }
+            } catch(e) {
+                window.location.replace('index.html');
+            }
+        })();
+
+        window.tsLogout = function() {
+            try {
+                sessionStorage.clear();
+                localStorage.removeItem('ts_user');
+                localStorage.removeItem('ts_role');
+                localStorage.removeItem('ts_name');
+                localStorage.removeItem('ts_cargo');
+                localStorage.removeItem('timeshift_session');
+            } catch(e) {}
+            window.location.replace('index.html');
+        };
+    </script>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN (Not necessarily needed here, but kept if used) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Google Sans', 'system-ui', 'sans-serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
                         mono: ['IBM Plex Mono', 'monospace'],
                     },
                     colors: {
@@ -30,66 +70,121 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         
         /* Ocultar barra de desplazamiento en nav */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+        /* Custom Toggle Switch Styles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #16A34A;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #16A34A;
+        }
+        .toggle-checkbox {
+            right: 0;
+            z-index: 1;
+            border-color: #e2e8f0;
+            transition: all 0.3s;
+        }
+        .toggle-label {
+            width: 2.5rem;
+            height: 1.25rem;
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-label:after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 1rem;
+            height: 1rem;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(1.25rem);
+        }
+
         /* Animación suave para modales */
         .modal-backdrop {
             background-color: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(2px);
         }
+
+        /* Bounce Animation from Index */
+        .bouncy-btn { transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .bouncy-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="bg-[#F8FAFC] text-textDark min-h-screen flex flex-col">
 
     <!-- Header Principal TimeShift -->
-    <header class="bg-[#111827] text-white flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-8 py-4 sticky top-0 z-50 gap-4 md:gap-0 border-b border-slate-800">
+    <header class="bg-[#111827] text-white flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-8 py-3.5 sm:py-4 sticky top-0 z-50 gap-3 md:gap-0 border-b border-slate-800">
         <!-- Logo y Admin Badge -->
         <div class="flex items-center justify-between w-full md:w-auto">
-            <div class="flex items-center gap-6">
-                <a href="dashboard.html" class="flex items-baseline gap-3 group">
+            <div class="flex items-center gap-4 sm:gap-6">
+                <a href="dashboard.html" class="flex items-baseline gap-2.5 group">
                     <h1 class="text-xl font-bold tracking-tight text-white group-hover:text-primary transition-colors">TimeShift</h1>
-                    <span class="inline-block whitespace-nowrap rounded-[0.27rem] bg-warning-100 px-[0.65em] pb-[0.25em] pt-[0.35em] text-center align-baseline text-[0.75em] font-bold leading-none text-warning-800 bg-[#2e2005] text-amber-400">Admin</span>
+                    <span id="header-user-badge" class="inline-block whitespace-nowrap rounded-[0.27rem] bg-[#2e2005] text-amber-400 px-[0.65em] pb-[0.25em] pt-[0.35em] text-center align-baseline text-[0.75em] font-bold leading-none">Jovita Alvarado</span>
                 </a>
             </div>
             
-            <!-- Avatar Mobile -->
-            <div class="w-9 h-9 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 ring-2 ring-slate-700 md:hidden">
-                <img src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Juan+Pablo&backgroundColor=1e293b" alt="Juan Pablo" class="w-full h-full object-cover">
+            <!-- Mobile Right: User Info, Avatar & Logout -->
+            <div class="flex items-center gap-2.5 md:hidden">
+                <div class="text-right flex flex-col items-end">
+                    <span id="header-user-name-mobile" class="text-xs font-semibold text-white leading-tight max-w-[110px] truncate">Admin</span>
+                    <span id="header-user-cargo-mobile" class="text-[10px] text-slate-400 leading-tight">Administrador</span>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 ring-2 ring-slate-700">
+                    <img id="header-user-avatar-mobile" src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Admin&backgroundColor=1e293b" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <button class="bouncy-btn text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors" title="Cerrar sesión" onclick="tsLogout();">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-logout" width="18" height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" /><path d="M9 12h12l-3 -3" /><path d="M18 15l3 -3" /></svg>
+                </button>
             </div>
         </div>
 
         <!-- Navegación Entre Módulos -->
-        <div class="flex-1 w-full md:w-auto overflow-x-auto hide-scrollbar pb-1 md:pb-0">
-            <nav class="flex gap-6 md:gap-8 text-sm font-medium text-slate-400 whitespace-nowrap md:px-6">
-                <a href="dashboard.html" class="hover:text-white transition-colors flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    Dashboard Principal
+        <div class="flex-1 w-full md:w-auto overflow-x-auto hide-scrollbar py-1 md:py-0">
+            <nav class="flex gap-2 sm:gap-4 md:gap-6 text-sm font-medium text-slate-400 whitespace-nowrap md:px-6">
+                <a href="dashboard.html" class="bouncy-btn hover:text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-dashboard w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 13m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M13.45 11.55l2.05 -2.05" /><path d="M6.4 20a9 9 0 1 1 11.2 0z" /></svg>
+                    <span>Dashboard Principal</span>
                 </a>
-                <a href="#modulo-empleados" id="nav-btn-empleados" class="tab-btn text-white border-b-2 border-primary pb-1 transition-colors flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    Gestión de Personal
+                <a href="#modulo-empleados" id="nav-btn-empleados" class="tab-btn bouncy-btn text-white border-b-2 border-primary pb-1 px-3 py-1.5 transition-colors flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-users w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /><path d="M21 21v-2a4 4 0 0 0 -3 -3.85" /></svg>
+                    <span>Gestión de Personal</span>
                 </a>
-                <a href="#modulo-marcaciones" id="nav-btn-marcaciones" class="tab-btn text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Historial de Marcaciones
+                <a href="#modulo-marcaciones" id="nav-btn-marcaciones" class="tab-btn bouncy-btn text-slate-400 hover:text-white px-3 py-1.5 transition-colors flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 7v5l3 3" /></svg>
+                    <span>Historial de Marcaciones</span>
                 </a>
             </nav>
         </div>
 
-        <!-- Perfil Usuario Desktop -->
-        <div class="items-center gap-4 hidden md:flex">
+        <!-- Desktop Right: Profile & Logout -->
+        <div class="items-center gap-4 hidden md:flex border-l border-slate-700 pl-4">
             <div class="text-right">
-                <div class="text-sm font-semibold text-white">Juan Pablo</div>
-                <div class="text-xs text-slate-400">Operaciones Globales</div>
+                <div class="text-sm font-semibold text-white" id="header-user-name"></div>
+                <div class="text-xs text-slate-400" id="header-user-cargo"></div>
             </div>
             <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 ring-2 ring-slate-700">
-                <img src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Juan+Pablo&backgroundColor=1e293b" alt="Juan Pablo" class="w-full h-full object-cover">
+                <img id="header-user-avatar" src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Admin&backgroundColor=1e293b" alt="Avatar" class="w-full h-full object-cover">
             </div>
+            <button class="bouncy-btn text-slate-400 hover:text-red-400 p-1.5 ml-1 rounded-lg hover:bg-slate-800 transition-colors" title="Cerrar sesión" onclick="tsLogout();">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-logout" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" /><path d="M9 12h12l-3 -3" /><path d="M18 15l3 -3" /></svg>
+            </button>
         </div>
     </header>
 
@@ -112,8 +207,8 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                <button id="btn-open-add-modal" class="bg-primary hover:bg-[#e04c00] text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                <button id="btn-open-add-modal" class="bouncy-btn bg-primary hover:bg-[#e04c00] text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user-plus w-4 h-4" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" /><path d="M16 19h6" /><path d="M19 16v6" /><path d="M6 21v-2a4 4 0 0 1 4 -4h4" /></svg>
                     + Registrar Nuevo Empleado
                 </button>
             </div>
@@ -126,8 +221,8 @@
             <!-- Tarjetas de Resumen General -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-lg bg-blue-50 text-brandBlue flex items-center justify-center font-bold text-xl">
-                        👥
+                    <div class="w-12 h-12 rounded-lg bg-blue-50 text-brandBlue flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-users-group w-6 h-6" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 13a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M8 21v-1a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v1" /><path d="M15 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M17 10h2a2 2 0 0 1 2 2v1" /><path d="M5 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M3 13v-1a2 2 0 0 1 2 -2h2" /></svg>
                     </div>
                     <div>
                         <div class="text-xs text-slate-500 font-medium">Total de Personal</div>
@@ -137,8 +232,8 @@
                 </div>
 
                 <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
-                        🟢
+                    <div class="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user-check w-6 h-6" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" /><path d="M6 21v-2a4 4 0 0 1 4 -4h4" /><path d="M15 19l2 2l4 -4" /></svg>
                     </div>
                     <div>
                         <div class="text-xs text-slate-500 font-medium">Personal Activo / Turno</div>
@@ -148,8 +243,8 @@
                 </div>
 
                 <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl">
-                        🏢
+                    <div class="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-building w-6 h-6" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 21l18 0" /><path d="M9 8l1 0" /><path d="M9 12l1 0" /><path d="M9 16l1 0" /><path d="M14 8l1 0" /><path d="M14 12l1 0" /><path d="M14 16l1 0" /><path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16" /></svg>
                     </div>
                     <div>
                         <div class="text-xs text-slate-500 font-medium">Departamentos</div>
@@ -159,8 +254,8 @@
                 </div>
 
                 <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold text-xl">
-                        ⚠️
+                    <div class="w-12 h-12 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-alert-triangle w-6 h-6" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 16h.01" /></svg>
                     </div>
                     <div>
                         <div class="text-xs text-slate-500 font-medium">Bajas / Inactivos</div>
@@ -176,7 +271,7 @@
                 <div class="p-4 sm:p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
                     <div class="relative flex-1 max-w-md">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search w-4 h-4 text-slate-400" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg>
                         </div>
                         <input type="text" id="employee-search-input" class="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-brandBlue focus:border-brandBlue block w-full pl-10 p-2.5 transition" placeholder="Buscar por nombre, cargo, ID o correo...">
                     </div>
@@ -202,7 +297,8 @@
                                 <option value="Disponible">Disponible</option>
                                 <option value="En Tribunal">En Tribunal</option>
                                 <option value="Reunión con Cliente">Reunión con Cliente</option>
-                                <option value="Almuerzo / Descanso">Almuerzo / Descanso</option>
+                                <option value="Almuerzo">Almuerzo</option>
+                                <option value="Break">Break</option>
                                 <option value="Fin de Turno">Fin de Turno</option>
                             </select>
                         </div>
@@ -247,7 +343,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div>
                     <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-history w-3.5 h-3.5" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 8l0 4l2 2" /><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" /></svg>
                         Historial Detallado Individual
                     </div>
                     <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Historial de Marcaciones de Asistencia</h2>
@@ -255,9 +351,9 @@
                 </div>
 
                 <!-- Selector Directo de Empleado -->
-                <div class="flex items-center gap-3 w-full sm:w-auto bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
-                    <label for="select-employee-history" class="text-xs font-semibold text-slate-600 whitespace-nowrap pl-2">Seleccionar Empleado:</label>
-                    <select id="select-employee-history" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-medium rounded-md focus:ring-brandBlue focus:border-brandBlue p-2">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="select-employee-history" class="text-xs font-semibold text-slate-600 whitespace-nowrap pl-1 sm:pl-2">Seleccionar Empleado:</label>
+                    <select id="select-employee-history" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-medium rounded-md focus:ring-brandBlue focus:border-brandBlue p-2 w-full sm:w-auto">
                         <!-- Llenado dinámicamente por JS -->
                     </select>
                 </div>
@@ -271,7 +367,7 @@
             <!-- Leyenda Explicativa de Etiquetas de Color -->
             <div class="bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-sm">
                 <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle w-4 h-4 text-slate-400" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" /></svg>
                     Guía de Etiquetas de Color (Estado de Marcación)
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -317,8 +413,8 @@
                                 <option value="LATE">Solo Retrasos e Incidentes</option>
                             </select>
                         </div>
-                        <button id="btn-add-punch" class="bg-brandBlue hover:bg-blue-900 text-white text-xs font-semibold py-2 px-3 rounded-lg transition flex items-center gap-1.5 shadow-sm">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <button id="btn-add-punch" class="bouncy-btn bg-brandBlue hover:bg-blue-900 text-white text-xs font-semibold py-2 px-3 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-plus w-3.5 h-3.5" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12.5 21h-6.5a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v5" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
                             Registrar Marcación Manual
                         </button>
                     </div>
@@ -340,6 +436,7 @@
                         </thead>
                         <tbody id="table-history-body" class="text-sm text-slate-700 divide-y divide-slate-100">
                             <!-- Llenado dinámico por JS -->
+                            <tr><td colspan="7" class="px-6 py-8 text-center text-slate-400 font-medium bg-slate-50">Seleccione un empleado del directorio para ver su historial.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -357,10 +454,10 @@
     <!-- ============================================================ -->
     <!-- MODAL 1: REGISTRAR NUEVO EMPLEADO (AGREGAR GENTE)           -->
     <!-- ============================================================ -->
-    <div id="modal-add-employee" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all">
+    <div id="modal-add-employee" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 modal-backdrop hidden overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden my-auto transform transition-all">
             <!-- Header Modal -->
-            <div class="px-6 py-4 bg-[#111827] text-white flex justify-between items-center">
+            <div class="px-5 sm:px-6 py-4 bg-[#111827] text-white flex justify-between items-center flex-shrink-0">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold">
                         +
@@ -374,7 +471,7 @@
             </div>
 
             <!-- Formulario Modal -->
-            <form id="form-add-employee" class="p-6 space-y-4">
+            <form id="form-add-employee" class="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nombre Completo *</label>
                     <input type="text" id="input-name" required placeholder="Ej. Elena Castillo" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue focus:border-brandBlue">
@@ -420,14 +517,15 @@
                         <option value="Disponible">Disponible (Activo)</option>
                         <option value="En Tribunal">En Tribunal</option>
                         <option value="Reunión con Cliente">Reunión con Cliente</option>
-                        <option value="Almuerzo / Descanso">Almuerzo / Descanso</option>
+                        <option value="Almuerzo">Almuerzo</option>
+                        <option value="Break">Break</option>
                         <option value="Fin de Turno">Fin de Turno</option>
                     </select>
                 </div>
 
-                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3 flex-shrink-0">
                     <button type="button" id="btn-cancel-add" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-[#e04c00] rounded-lg transition shadow-sm">Guardar y Dar de Alta</button>
+                    <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-[#e04c00] rounded-lg transition shadow-sm">Guardar</button>
                 </div>
             </form>
         </div>
@@ -436,9 +534,9 @@
     <!-- ============================================================ -->
     <!-- MODAL 2: CONFIRMACIÓN PARA QUITAR/ELIMINAR EMPLEADO         -->
     <!-- ============================================================ -->
-    <div id="modal-delete-employee" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all">
-            <div class="p-6 text-center">
+    <div id="modal-delete-employee" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 modal-backdrop hidden overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden my-auto transform transition-all">
+            <div class="p-5 sm:p-6 text-center overflow-y-auto flex-1">
                 <div class="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
                     ⚠️
                 </div>
@@ -463,9 +561,9 @@
     <!-- ============================================================ -->
     <!-- MODAL 3: REGISTRAR MARCACIÓN MANUAL                         -->
     <!-- ============================================================ -->
-    <div id="modal-add-punch" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all">
-            <div class="px-6 py-4 bg-[#111827] text-white flex justify-between items-center">
+    <div id="modal-add-punch" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 modal-backdrop hidden overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden my-auto transform transition-all">
+            <div class="px-5 sm:px-6 py-4 bg-[#111827] text-white flex justify-between items-center flex-shrink-0">
                 <div>
                     <h3 class="text-base font-bold">Registrar Marcación Manual</h3>
                     <p class="text-xs text-slate-400">Ajuste de asistencia o justificación para <span id="manual-punch-emp-name" class="font-semibold text-white"></span></p>
@@ -473,7 +571,7 @@
                 <button id="btn-close-modal-punch" class="text-slate-400 hover:text-white text-xl font-bold p-1">&times;</button>
             </div>
 
-            <form id="form-add-punch" class="p-6 space-y-4">
+            <form id="form-add-punch" class="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Fecha *</label>
@@ -511,7 +609,7 @@
                     <textarea id="punch-notes" rows="2" placeholder="Ej. Atraso justificado por transporte, permiso personal otorgado..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm text-slate-900 focus:ring-brandBlue"></textarea>
                 </div>
 
-                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3 flex-shrink-0">
                     <button type="button" id="btn-cancel-punch" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition">Cancelar</button>
                     <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-brandBlue hover:bg-blue-900 rounded-lg transition shadow-sm">Agregar al Historial</button>
                 </div>
