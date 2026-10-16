@@ -88,6 +88,17 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(`ts_state_start_${tsUser}`, stateStartTime.toISOString());
     }
 
+    // Sesión activa total: arranca al abrir el portal cada día y se reinicia al volver de Salida
+    const sessionKey = `ts_session_start_${tsUser}`;
+    const sessionDisplay = document.getElementById('session-timer-display');
+    let sessionStartTime = new Date();
+    const savedSession = localStorage.getItem(sessionKey);
+    if (savedSession && new Date(savedSession).toDateString() === new Date().toDateString()) {
+        sessionStartTime = new Date(savedSession);
+    } else {
+        localStorage.setItem(sessionKey, sessionStartTime.toISOString());
+    }
+
     // Seed initial daily history row if empty
     if (dailyHistory.length === 0) {
         const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -240,6 +251,12 @@ document.addEventListener('DOMContentLoaded', () => {
         stateStartTime = now;
         localStorage.setItem(`ts_state_start_${tsUser}`, stateStartTime.toISOString());
 
+        // Si regresa desde Salida, empieza una nueva sesión
+        if (myEmp.colorId === 'end') {
+            sessionStartTime = now;
+            localStorage.setItem(sessionKey, sessionStartTime.toISOString());
+        }
+
         // Update Employee object
         myEmp.state = stateLabel;
         myEmp.colorId = stateId;
@@ -283,6 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (stateTimerDisplay) {
             stateTimerDisplay.textContent = timeStr;
+        }
+
+        if (sessionDisplay) {
+            sessionDisplay.textContent = (myEmp && myEmp.colorId === 'end') ? '--:--:--' : formatTimeDiff(sessionStartTime);
         }
 
         const historyDurDisplay = document.getElementById('history-current-duration');
