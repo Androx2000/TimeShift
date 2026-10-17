@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TimeShift - Reportes AUX</title>
+<script>
+(function(){try{var u=sessionStorage.getItem('ts_user')||localStorage.getItem('ts_user');var r=sessionStorage.getItem('ts_role')||localStorage.getItem('ts_role');if(!u||r!=='admin'){window.location.replace('index.html');}}catch(e){window.location.replace('index.html');}})();
+window.tsLogout=function(){try{sessionStorage.clear();['ts_user','ts_role','ts_name','ts_cargo','timeshift_session'].forEach(function(k){localStorage.removeItem(k)});}catch(e){}window.location.replace('index.html');};
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['IBM Plex Mono','monospace']},colors:{primary:"#FF5701",success:"#16A34A",warning:"#D97706",danger:"#DC2626",textDark:"#111827",brandBlue:"#1e3a8a"}}}}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+body{font-family:'Inter',sans-serif}
+.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{scrollbar-width:none}
+.bouncy-btn{transition:transform .15s cubic-bezier(.4,0,.2,1);cursor:pointer}.bouncy-btn:active{transform:scale(.95)}
+th.sortable{cursor:pointer;user-select:none}th.sortable:hover{color:#111827}
+dialog::backdrop{background:rgba(15,23,42,.5)}
+</style>
+</head>
+<body class="bg-[#F8FAFC] text-textDark min-h-screen flex flex-col">
+
+<header class="bg-[#111827] text-white flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-8 py-3.5 sm:py-4 sticky top-0 z-50 gap-3 md:gap-0 border-b border-slate-800">
+  <div class="flex items-center justify-between w-full md:w-auto">
+    <div class="flex items-baseline gap-2.5">
+      <h1 class="text-xl font-bold tracking-tight">TimeShift</h1>
+      <span id="hdr-badge" class="inline-block whitespace-nowrap rounded-[0.27rem] bg-[#2e2005] text-amber-400 px-[0.65em] pb-[0.25em] pt-[0.35em] text-[0.75em] font-bold leading-none">Admin</span>
+    </div>
+    <button class="bouncy-btn md:hidden text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-slate-800" title="Cerrar sesión" onclick="tsLogout()">Salir</button>
+  </div>
+  <div class="flex-1 w-full md:w-auto overflow-x-auto hide-scrollbar py-1 md:py-0">
+    <nav class="flex gap-2 sm:gap-4 md:gap-6 text-sm font-medium text-slate-400 whitespace-nowrap md:px-6">
+      <a href="dashboard.html" class="hover:text-white px-3 py-1.5 rounded-lg transition-colors bouncy-btn">Monitor en Tiempo Real</a>
+      <a href="reportes.html" class="text-white bg-slate-800/80 px-3 py-1.5 rounded-lg bouncy-btn">Reportes</a>
+      <a href="dashboard.html" class="hover:text-white px-3 py-1.5 rounded-lg transition-colors bouncy-btn">Directorio de Personal</a>
+      <a href="gestion de datos.html" class="hover:text-white px-3 py-1.5 rounded-lg transition-colors bouncy-btn">Gestión de Datos</a>
+    </nav>
+  </div>
+  <div class="items-center gap-4 hidden md:flex border-l border-slate-700 pl-4">
+    <div class="text-right"><div class="text-sm font-semibold" id="hdr-name"></div><div class="text-xs text-slate-400" id="hdr-cargo"></div></div>
+    <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden ring-2 ring-slate-700"><img id="hdr-avatar" alt="Avatar" class="w-full h-full object-cover" src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Admin&backgroundColor=1e293b"></div>
+    <button class="bouncy-btn text-slate-400 hover:text-red-400 px-2 py-1 rounded-lg hover:bg-slate-800 text-sm" onclick="tsLogout()">Salir</button>
+  </div>
+</header>
+
+<main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto w-full">
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-2xl font-bold">Reportes de Estados AUX</h2>
+      <p class="text-sm text-slate-500">Registros y duraciones por empleado, con filtros y exportación.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button id="btn-csv" class="bouncy-btn px-4 py-2 text-sm font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50">Exportar CSV</button>
+      <button id="btn-xlsx" class="bouncy-btn px-4 py-2 text-sm font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50">Exportar XLSX</button>
+      <button id="btn-pdf" class="bouncy-btn px-4 py-2 text-sm font-semibold bg-brandBlue text-white rounded-lg hover:bg-blue-900">Informe PDF (APA 7)</button>
+    </div>
+  </div>
+
+  <div id="demo-banner" class="hidden mb-4 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-2.5">
+    Se están mostrando <b>datos de demostración</b> porque no se encontraron registros AUX en <code>localStorage</code> (<code>ts_aux_logs</code>). Se llenan cuando los empleados cambian de estado en <code>portal.html</code>.
+  </div>
+
+  <!-- Filtros -->
+  <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 text-xs font-semibold text-slate-600">
+      <label>Desde<input id="f-from" type="date" class="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm font-normal"></label>
+      <label>Hasta<input id="f-to" type="date" class="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm font-normal"></label>
+      <label>Empleado<select id="f-emp" class="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
+      <label>Cargo<select id="f-cargo" class="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
+      <label>Estado AUX<select id="f-state" class="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
+      <label>Duración mínima (min)<input id="f-min" type="number" min="0" value="0" class="mt-1 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm font-normal"></label>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 mt-4 text-xs">
+      <span class="text-slate-500 font-semibold">Rápido:</span>
+      <button data-days="0" class="preset bouncy-btn px-3 py-1.5 rounded-full border border-slate-300 hover:bg-slate-50">Hoy</button>
+      <button data-days="6" class="preset bouncy-btn px-3 py-1.5 rounded-full border border-slate-300 hover:bg-slate-50">7 días</button>
+      <button data-days="29" class="preset bouncy-btn px-3 py-1.5 rounded-full border border-slate-300 hover:bg-slate-50">30 días</button>
+      <button id="f-reset" class="bouncy-btn ml-auto px-3 py-1.5 rounded-full text-slate-500 hover:text-slate-800">Limpiar filtros</button>
+    </div>
+  </section>
+
+  <!-- KPIs -->
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><h3 class="text-xs font-medium text-slate-500 mb-1">Registros</h3><div id="k-count" class="text-3xl font-bold text-brandBlue">0</div></div>
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><h3 class="text-xs font-medium text-slate-500 mb-1">Tiempo total registrado</h3><div id="k-total" class="text-3xl font-bold text-success font-mono">0</div></div>
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><h3 class="text-xs font-medium text-slate-500 mb-1">Duración promedio</h3><div id="k-avg" class="text-3xl font-bold font-mono">0</div></div>
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><h3 class="text-xs font-medium text-slate-500 mb-1">Pausas (Almuerzo + Break)</h3><div id="k-pause" class="text-3xl font-bold text-warning font-mono">0</div></div>
+  </section>
+
+  <!-- Resumen + gráfica -->
+  <section class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <h3 class="font-semibold mb-3">Minutos por estado AUX</h3>
+      <div class="relative h-64"><canvas id="chart"></canvas></div>
+    </div>
+    <div class="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm p-5 overflow-x-auto">
+      <h3 class="font-semibold mb-3">Resumen por estado</h3>
+      <table class="w-full text-sm"><thead class="text-left text-xs text-slate-500 border-b border-slate-200"><tr><th class="py-2">Estado</th><th class="text-right">Registros</th><th class="text-right">Total</th><th class="text-right">Promedio</th><th class="text-right">%</th></tr></thead><tbody id="sum-body"></tbody></table>
+    </div>
+  </section>
+
+  <!-- Registros -->
+  <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center"><h3 class="font-semibold">Registros detallados</h3><span id="t-info" class="text-xs text-slate-500"></span></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-left text-xs text-slate-500"><tr>
+          <th class="sortable px-5 py-3" data-k="start">Fecha</th><th class="sortable px-3" data-k="name">Empleado</th><th class="sortable px-3" data-k="cargo">Cargo</th>
+          <th class="sortable px-3" data-k="label">Estado AUX</th><th class="px-3">Inicio</th><th class="px-3">Fin</th><th class="sortable px-5 text-right" data-k="dur">Duración</th></tr></thead>
+        <tbody id="t-body" class="divide-y divide-slate-100"></tbody>
+      </table>
+    </div>
+    <div class="px-5 py-3 border-t border-slate-200 flex justify-between items-center text-xs">
+      <button id="pg-prev" class="bouncy-btn px-3 py-1.5 border border-slate-300 rounded-lg disabled:opacity-40">Anterior</button>
+      <span id="pg-label" class="text-slate-500"></span>
+      <button id="pg-next" class="bouncy-btn px-3 py-1.5 border border-slate-300 rounded-lg disabled:opacity-40">Siguiente</button>
+    </div>
+  </section>
+</main>
+
+<!-- Datos del informe APA -->
+<dialog id="dlg" class="rounded-xl p-0 w-[min(520px,92vw)]">
+  <form method="dialog" id="dlg-form" class="p-6 space-y-3 text-xs font-semibold text-slate-600">
+    <h3 class="text-base font-bold text-textDark">Datos de la portada (APA 7)</h3>
+    <label class="block">Título<input id="m-title" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal"></label>
+    <label class="block">Autores (uno por línea)<textarea id="m-authors" rows="4" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal"></textarea></label>
+    <label class="block">Institución / Facultad<input id="m-inst" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal"></label>
+    <div class="grid grid-cols-2 gap-3">
+      <label>Curso<input id="m-course" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal"></label>
+      <label>Docente<input id="m-prof" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal"></label>
+    </div>
+    <label class="block">Fecha de entrega<input id="m-date" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal"></label>
+    <div class="flex justify-end gap-2 pt-2">
+      <button value="cancel" class="px-4 py-2 text-sm border border-slate-300 rounded-lg">Cancelar</button>
+      <button id="m-go" value="ok" class="px-4 py-2 text-sm font-semibold bg-brandBlue text-white rounded-lg">Generar PDF</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+/* ===================== CONFIG ===================== */
+const STATES = {
+  available:{label:'Disponible',color:'#00A669'}, court:{label:'En Tribunal',color:'#1D3B8B'},
+  meeting:{label:'Reunión con Cliente',color:'#F59E0B'}, lunch:{label:'Almuerzo',color:'#64748B'},
+  break:{label:'Break',color:'#8B5CF6'}
+};
+const STAFF = [['aruiz','Andrea Ruiz','Abogada Litigante'],['mportillo','Marcela Portillo','Abogada Corporativa'],['jhenriquez','Javier Henríquez','Asistente Legal'],['lcastro','Luis Castro','Asistente Legal'],['rflores','Roxana Flores','Recepción'],['ppineda','Patricia Pineda','Contabilidad'],['esantos','Eduardo Santos','Mensajería / Notificador']];
+const LOG_KEYS = ['ts_aux_logs'];
+const PAGE = 15;
+
+/* ===================== UTILIDADES ===================== */
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hms = d => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+const dmy = d => `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+const fmtDur = s => { s=Math.round(s); const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return h? `${h}h ${pad(m)}m` : `${m}m ${pad(x)}s`; };
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ===================== DATOS ===================== */
+function normalize(r){
+  const sid = r.stateId||r.state||r.estado||'';
+  const st = STATES[sid]; if(!st) return null;
+  const start = new Date(r.start||r.inicio), end = new Date(r.end||r.fin);
+  if(isNaN(start)||isNaN(end)||end<=start) return null;
+  return {user:r.user||r.usuario||r.empId||'', name:r.name||r.empName||r.empleado||r.user||'—', cargo:r.cargo||'—',
+          sid, label:st.label, start, end, dur:(end-start)/1000};
+}
+function demo(){ // generador determinista para pruebas
+  let seed=42; const rnd=()=> (seed=(seed*16807)%2147483647)/2147483647; const out=[];
+  const plan=[['available',70],['court',90],['break',15],['meeting',60],['available',40],['lunch',55],['court',75],['meeting',45],['break',12],['available',50]];
+  for(let d=0; d<20; d++){
+    const day=new Date(); day.setDate(day.getDate()-d); if([0,6].includes(day.getDay())) continue;
+    STAFF.forEach(([u,n,c])=>{ let t=new Date(day.getFullYear(),day.getMonth(),day.getDate(),8,Math.floor(rnd()*10),0);
+      plan.forEach(([sid,min])=>{ const dur=Math.max(5,min+Math.round((rnd()-.5)*min*.5))*60; const e=new Date(t.getTime()+dur*1000);
+        out.push({user:u,name:n,cargo:c,stateId:sid,start:t.toISOString(),end:e.toISOString()}); t=e; }); });
+  } return out;
+}
+let ALL=[], VIEW=[], sort={k:'start',dir:-1}, page=0, chart;
+function liveSegments(){ // estado en curso de cada empleado (portal.js: ts_employees + ts_state_start_<user>)
+  const out=[], now=new Date();
+  try{ (JSON.parse(localStorage.getItem('ts_employees'))||[]).forEach(e=>{
+    const u=(e.email||'').split('@')[0], st=localStorage.getItem('ts_state_start_'+u);
+    if(!st||!STATES[e.colorId]) return; const d=(now-new Date(st))/36e5; if(d<0||d>12) return;
+    out.push({user:u,name:e.name,cargo:e.role,stateId:e.colorId,start:st,end:now.toISOString()}); }); }catch(e){}
+  return out;
+}
+function load(){
+  let raw=[]; for(const k of LOG_KEYS){ try{ const v=JSON.parse(localStorage.getItem(k)||'[]'); if(Array.isArray(v)&&v.length){raw=v;break;} }catch(e){} }
+  raw=raw.concat(liveSegments());
+  const isDemo = !raw.length; if(isDemo) raw=demo();
+  $('demo-banner').classList.toggle('hidden',!isDemo);
+  ALL = raw.map(normalize).filter(Boolean);
+}
+
+/* ===================== FILTROS ===================== */
+function fillSelect(el, items, first){ el.innerHTML = `<option value="">${first}</option>` + items.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join(''); }
+function fillFilters(){
+  const keep=['f-emp','f-cargo','f-state'].map(i=>$(i).value);
+  const emps=[...new Map(ALL.map(r=>[r.user,r.name])).entries()].sort((a,b)=>a[1].localeCompare(b[1]));
+  fillSelect($('f-emp'),emps,'Todos');
+  fillSelect($('f-cargo'),[...new Set(ALL.map(r=>r.cargo))].sort().map(c=>[c,c]),'Todos');
+  fillSelect($('f-state'),Object.entries(STATES).map(([k,v])=>[k,v.label]),'Todos');
+  ['f-emp','f-cargo','f-state'].forEach((i,k)=>$(i).value=keep[k]);
+}
+function initFilters(){ fillFilters(); setRange(13); }
+function setRange(days){ const t=new Date(), f=new Date(); f.setDate(t.getDate()-days); $('f-from').value=ymd(f); $('f-to').value=ymd(t); apply(); }
+function filters(){ return {from:$('f-from').value,to:$('f-to').value,emp:$('f-emp').value,cargo:$('f-cargo').value,state:$('f-state').value,min:+$('f-min').value||0}; }
+function apply(){
+  const f=filters();
+  VIEW = ALL.filter(r=>{ const d=ymd(r.start);
+    return (!f.from||d>=f.from)&&(!f.to||d<=f.to)&&(!f.emp||r.user===f.emp)&&(!f.cargo||r.cargo===f.cargo)&&(!f.state||r.sid===f.state)&&r.dur>=f.min*60; });
+  page=0; render();
+}
+function filterText(){
+  const f=filters(), p=[];
+  p.push(`período del ${f.from?dmy(new Date(f.from+'T00:00')):'inicio'} al ${f.to?dmy(new Date(f.to+'T00:00')):'fin'}`);
+  if(f.emp) p.push('empleado: '+$('f-emp').selectedOptions[0].text);
+  if(f.cargo) p.push('cargo: '+f.cargo);
+  if(f.state) p.push('estado: '+STATES[f.state].label);
+  if(f.min) p.push(`duración mínima de ${f.min} min`);
+  return p.join('; ');
+}
+
+/* ===================== RENDER ===================== */
+function summary(){
+  const tot=VIEW.reduce((a,r)=>a+r.dur,0);
+  return Object.entries(STATES).map(([k,v])=>{ const rs=VIEW.filter(r=>r.sid===k), t=rs.reduce((a,r)=>a+r.dur,0);
+    return {sid:k,label:v.label,color:v.color,n:rs.length,total:t,avg:rs.length?t/rs.length:0,pct:tot?t/tot*100:0}; }).filter(s=>s.n);
+}
+function render(){
+  const tot=VIEW.reduce((a,r)=>a+r.dur,0), pause=VIEW.filter(r=>r.sid==='lunch'||r.sid==='break').reduce((a,r)=>a+r.dur,0);
+  $('k-count').textContent=VIEW.length; $('k-total').textContent=fmtDur(tot); $('k-avg').textContent=VIEW.length?fmtDur(tot/VIEW.length):'—'; $('k-pause').textContent=fmtDur(pause);
+  const S=summary();
+  $('sum-body').innerHTML = S.length? S.map(s=>`<tr class="border-b border-slate-100"><td class="py-2"><span class="inline-block w-2.5 h-2.5 rounded-full mr-2" style="background:${s.color}"></span>${s.label}</td><td class="text-right">${s.n}</td><td class="text-right font-mono">${fmtDur(s.total)}</td><td class="text-right font-mono">${fmtDur(s.avg)}</td><td class="text-right">${s.pct.toFixed(1)}%</td></tr>`).join('') : '<tr><td colspan="5" class="py-6 text-center text-slate-400">Sin datos</td></tr>';
+  drawChart(S); renderTable();
+}
+function drawChart(S){
+  const data={labels:S.map(s=>s.label),datasets:[{data:S.map(s=>+(s.total/60).toFixed(1)),backgroundColor:S.map(s=>s.color),borderRadius:4}]};
+  const white={id:'white',beforeDraw(c){const x=c.ctx;x.save();x.globalCompositeOperation='destination-over';x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.restore();}};
+  if(chart){chart.data=data;chart.update();return;}
+  chart=new Chart($('chart'),{type:'bar',data,plugins:[white],options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:'Minutos'},beginAtZero:true}}}});
+}
+function sorted(){ const {k,dir}=sort; return [...VIEW].sort((a,b)=>{ const x=a[k]??'', y=b[k]??''; return (x>y?1:x<y?-1:0)*dir; }); }
+function renderTable(){
+  const rows=sorted(), pages=Math.max(1,Math.ceil(rows.length/PAGE)); page=Math.min(page,pages-1);
+  const slice=rows.slice(page*PAGE,page*PAGE+PAGE);
+  $('t-body').innerHTML = slice.length? slice.map(r=>`<tr class="hover:bg-slate-50"><td class="px-5 py-2.5">${dmy(r.start)}</td><td class="px-3 font-medium">${esc(r.name)}</td><td class="px-3 text-slate-500">${esc(r.cargo)}</td>
+    <td class="px-3"><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-white" style="background:${STATES[r.sid].color}">${r.label}</span></td>
+    <td class="px-3 font-mono text-xs">${hms(r.start)}</td><td class="px-3 font-mono text-xs">${hms(r.end)}</td><td class="px-5 text-right font-mono">${fmtDur(r.dur)}</td></tr>`).join('')
+    : '<tr><td colspan="7" class="py-10 text-center text-slate-400">No hay registros con los filtros actuales.</td></tr>';
+  $('t-info').textContent=`${rows.length} registros`; $('pg-label').textContent=`Página ${page+1} de ${pages}`;
+  $('pg-prev').disabled=page===0; $('pg-next').disabled=page>=pages-1;
+}
+
+/* ===================== EXPORTAR CSV / XLSX ===================== */
+const HEAD=['Fecha','Empleado','Usuario','Cargo','Estado AUX','Inicio','Fin','Duración (hh:mm:ss)','Duración (segundos)'];
+const hhmmss = s => `${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(Math.round(s%60))}`;
+const rowsOut = () => sorted().map(r=>[dmy(r.start),r.name,r.user,r.cargo,r.label,hms(r.start),hms(r.end),hhmmss(r.dur),Math.round(r.dur)]);
+const stamp = () => ymd(new Date());
+function download(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
+function exportCSV(){
+  if(!VIEW.length) return alert('No hay registros para exportar.');
+  const q=v=>/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:v;
+  const csv='\uFEFF'+[HEAD,...rowsOut()].map(r=>r.map(q).join(',')).join('\r\n');
+  download(new Blob([csv],{type:'text/csv;charset=utf-8'}),`reporte_aux_${stamp()}.csv`);
+}
+function exportXLSX(){
+  if(!VIEW.length) return alert('No hay registros para exportar.');
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([HEAD,...rowsOut()]); ws['!cols']=[12,24,12,26,20,10,10,18,16].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,'Registros AUX');
+  const S=summary(), ws2=XLSX.utils.aoa_to_sheet([['Estado AUX','Registros','Total (hh:mm:ss)','Promedio (hh:mm:ss)','% del tiempo'],...S.map(s=>[s.label,s.n,hhmmss(s.total),hhmmss(s.avg),+s.pct.toFixed(1)])]);
+  ws2['!cols']=[22,10,16,18,12].map(w=>({wch:w})); XLSX.utils.book_append_sheet(wb,ws2,'Resumen por estado');
+  const ws3=XLSX.utils.aoa_to_sheet([['Filtros aplicados'],[filterText()],['Generado',new Date().toLocaleString('es-SV')]]); ws3['!cols']=[{wch:90}];
+  XLSX.utils.book_append_sheet(wb,ws3,'Filtros');
+  XLSX.writeFile(wb,`reporte_aux_${stamp()}.xlsx`);
+}
+
+/* ===================== PDF · APA 7 ===================== */
+/* Times New Roman 12 pt, márgenes 1", interlineado doble, sangría 0.5", número de página arriba a la derecha,
+   título en negrita centrado, tablas y figuras con etiqueta en negrita y título en cursiva, referencias con sangría francesa. */
+const META_KEY='ts_pdf_meta';
+const META_DEF={title:'Informe de Registros y Duraciones de Estados AUX en TimeShift',authors:'Boris Armando Campos López\nDiego Humberto Márquez Valencia\nMarcos Abdulio López Alvarado\nAlan Enrique Ventura Hernández',inst:'Universidad Don Bosco',course:'',prof:'',date:new Date().toLocaleDateString('es-SV',{day:'numeric',month:'long',year:'numeric'})};
+function getMeta(){ try{return {...META_DEF,...JSON.parse(localStorage.getItem(META_KEY)||'{}')};}catch(e){return META_DEF;} }
+
+function buildPDF(m){
+  const {jsPDF}=window.jspdf, doc=new jsPDF({unit:'pt',format:'letter'});
+  const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight(), M=72, R=W-M, LH=24, FS=12;
+  let y=M; doc.setFont('times','normal'); doc.setFontSize(FS);
+  const newPage=()=>{doc.addPage(); y=M;};
+  const room=n=>{ if(y+n>H-M) newPage(); };
+  const center=(t,bold)=>{ doc.setFont('times',bold?'bold':'normal'); doc.splitTextToSize(t,R-M).forEach(l=>{room(LH);doc.text(l,W/2,y+FS,{align:'center'});y+=LH;}); doc.setFont('times','normal'); };
+  /* texto con estilos mixtos: tokens = [[texto,'normal'|'italic'|'bold'],…] */
+  const rich=(tokens,first=0,rest=0)=>{
+    const words=tokens.flatMap(([t,s])=>t.split(' ').filter(Boolean).map(w=>[w,s])); let x=M+first; room(LH);
+    words.forEach(([w,s])=>{ doc.setFont('times',s); const ww=doc.getTextWidth(w+' ');
+      if(x+doc.getTextWidth(w)>R && x>M+rest+1){ y+=LH; room(LH); x=M+rest; }
+      doc.text(w,x,y+FS); x+=ww; });
+    y+=LH; doc.setFont('times','normal');
+  };
+  const h1=t=>{ room(LH*2); center(t,true); };
+  const para=t=>rich([[t,'normal']],36,0);
+
+  /* — Portada — */
+  y=M+LH*4; center(m.title,true); y+=LH;
+  m.authors.split('\n').filter(s=>s.trim()).forEach(a=>center(a.trim()));
+  [m.inst,m.course,m.prof,m.date].filter(s=>s&&s.trim()).forEach(s=>center(s.trim()));
+  newPage();
+
+  /* — Cuerpo — */
+  center(m.title,true);
+  const S=summary(), tot=VIEW.reduce((a,r)=>a+r.dur,0), top=[...S].sort((a,b)=>b.total-a.total)[0];
+  para(`El presente informe resume ${VIEW.length} registros de estados auxiliares (AUX) generados por el sistema TimeShift, el cual permite a los colaboradores señalar su situación laboral en tiempo real y a la administración analizar su duración (Campos et al., 2026).`);
+  h1('Método');
+  para(`Los datos se obtuvieron del almacenamiento del sistema y se filtraron según los siguientes criterios: ${filterText()}. La duración de cada registro se calculó como la diferencia entre la hora de fin y la hora de inicio de cada estado. El formato del documento sigue las normas de la American Psychological Association [APA] (2020).`);
+  h1('Resultados');
+  para(S.length? `En total se acumularon ${fmtDur(tot)} de tiempo registrado, con una duración promedio de ${fmtDur(tot/VIEW.length)} por registro. El estado con mayor tiempo acumulado fue ${top.label} (${top.pct.toFixed(1)} %). La Tabla 1 presenta el resumen por estado y la Figura 1 su distribución en minutos.` : 'No se encontraron registros con los filtros seleccionados.');
+
+  const rules=(data)=>{ const c=data.cell, last=data.table.body.length-1;
+    doc.setLineWidth(.75); doc.setDrawColor(0);
+    if(data.section==='head'){ if(data.row.index===0) doc.line(c.x,c.y,c.x+c.width,c.y); doc.line(c.x,c.y+c.height,c.x+c.width,c.y+c.height); }
+    if(data.section==='body'&&data.row.index===last) doc.line(c.x,c.y+c.height,c.x+c.width,c.y+c.height); };
+  const tstyle={theme:'plain',styles:{font:'times',fontSize:10,textColor:0,cellPadding:{top:3,bottom:3,left:4,right:4}},headStyles:{fontStyle:'bold'},margin:{left:M,right:M},didDrawCell:rules};
+  const label=(n,title,kind)=>{ room(LH*3); rich([[`${kind} ${n}`,'bold']]); rich([[title,'italic']]); };
+  const note=t=>{ y+=4; rich([['Nota. ','italic'],[t,'normal']]); };
+
+  if(S.length){
+    label(1,'Resumen de registros AUX por estado','Tabla');
+    doc.autoTable({...tstyle,startY:y-6,head:[['Estado AUX','Registros','Tiempo total','Promedio','% del tiempo']],
+      body:S.map(s=>[s.label,s.n,fmtDur(s.total),fmtDur(s.avg),s.pct.toFixed(1)]),
+      columnStyles:{1:{halign:'right'},2:{halign:'right'},3:{halign:'right'},4:{halign:'right'}}});
+    y=doc.lastAutoTable.finalY+6; note('Elaboración propia con datos del sistema TimeShift.');
+    const img=chart.toBase64Image('image/png',1), iw=R-M-60, ih=iw*chart.height/chart.width;
+    newPage(); label(1,'Minutos acumulados por estado AUX','Figura'); room(ih+LH*2);
+    doc.addImage(img,'PNG',M+30,y,iw,ih); y+=ih+10; note('Se incluyen únicamente los estados con registros dentro del período filtrado.');
+  }
+  const rows=rowsOut(), CAP=150;
+  newPage(); label(2,'Registros de estados AUX por empleado','Tabla');
+  doc.autoTable({...tstyle,startY:y-6,styles:{...tstyle.styles,fontSize:8.5,cellPadding:2.5},
+    head:[['Fecha','Empleado','Estado AUX','Inicio','Fin','Duración']],
+    body:rows.slice(0,CAP).map(r=>[r[0],r[1],r[4],r[5],r[6],r[7]]),columnStyles:{5:{halign:'right'}}});
+  y=doc.lastAutoTable.finalY+6; note(rows.length>CAP?`Se muestran los primeros ${CAP} de ${rows.length} registros; el conjunto completo está disponible en la exportación CSV o XLSX.`:'Se muestran todos los registros del período filtrado.');
+
+  /* — Referencias — */
+  newPage(); center('Referencias',true);
+  rich([['American Psychological Association. (2020). ','normal'],['Publication manual of the American Psychological Association','italic'],[' (7.ª ed.). https://doi.org/10.1037/0000165-000','normal']],0,36);
+  rich([['Campos López, B. A., Márquez Valencia, D. H., López Alvarado, M. A., y Ventura Hernández, A. E. (2026). ','normal'],['TimeShift: Sistema de control de asistencia y gestión de turnos','italic'],[` [Software]. ${m.inst}.`,'normal']],0,36);
+  /* — Numeración — */
+  const n=doc.getNumberOfPages(); for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont('times','normal'); doc.setFontSize(FS); doc.text(String(i),R,44,{align:'right'}); }
+  doc.save(`informe_aux_APA7_${stamp()}.pdf`);
+}
+
+/* ===================== EVENTOS ===================== */
+document.addEventListener('DOMContentLoaded',()=>{
+  const n=sessionStorage.getItem('ts_name')||localStorage.getItem('ts_name')||'Administrador', c=sessionStorage.getItem('ts_cargo')||localStorage.getItem('ts_cargo')||'Administrador';
+  $('hdr-badge').textContent=n; $('hdr-name').textContent=n; $('hdr-cargo').textContent=c;
+  $('hdr-avatar').src=`https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(n)}&backgroundColor=1e293b`;
+  load(); initFilters();
+  window.addEventListener('storage',e=>{ if(e.key&&/^ts_(aux_logs|employees|state_start)/.test(e.key)){ load(); fillFilters(); apply(); } });
+  ['f-from','f-to','f-emp','f-cargo','f-state','f-min'].forEach(id=>$(id).addEventListener('input',apply));
+  document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>setRange(+b.dataset.days)));
+  $('f-reset').addEventListener('click',()=>{['f-emp','f-cargo','f-state'].forEach(i=>$(i).value='');$('f-min').value=0;setRange(13);});
+  document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>{ const k=th.dataset.k; sort={k,dir:sort.k===k?-sort.dir:1}; renderTable(); }));
+  $('pg-prev').addEventListener('click',()=>{page--;renderTable();}); $('pg-next').addEventListener('click',()=>{page++;renderTable();});
+  $('btn-csv').addEventListener('click',exportCSV); $('btn-xlsx').addEventListener('click',exportXLSX);
+  $('btn-pdf').addEventListener('click',()=>{ const m=getMeta(); $('m-title').value=m.title;$('m-authors').value=m.authors;$('m-inst').value=m.inst;$('m-course').value=m.course;$('m-prof').value=m.prof;$('m-date').value=m.date; $('dlg').showModal(); });
+  $('dlg-form').addEventListener('submit',e=>{ if(e.submitter&&e.submitter.value==='ok'){
+    const m={title:$('m-title').value,authors:$('m-authors').value,inst:$('m-inst').value,course:$('m-course').value,prof:$('m-prof').value,date:$('m-date').value};
+    try{localStorage.setItem(META_KEY,JSON.stringify(m));}catch(x){}
+    setTimeout(()=>{ try{buildPDF(m);}catch(err){console.error(err);alert('No se pudo generar el PDF: '+err.message);} },50); } });
+});
+</script>
+</body>
+</html>
