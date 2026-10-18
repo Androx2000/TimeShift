@@ -23,6 +23,49 @@ function countEmployeesByState(employees, stateId) {
   ).length;
 }
 
+
+function renderEmployeesTable(employees) {
+  const tbody = document.getElementById(
+    "employees-table-body"
+  );
+
+  if (!tbody) return;
+
+  tbody.replaceChildren();
+
+  if (employees.length === 0) {
+    const row = tbody.insertRow();
+    const cell = row.insertCell();
+
+    cell.colSpan = 3;
+    cell.textContent = "No hay empleados registrados.";
+    return;
+  }
+
+  const stateLabels = {
+    available: "Disponible",
+    lunch: "Lunch",
+    break: "Break",
+    end: "Salida"
+  };
+
+  employees.forEach(employee => {
+    const row = tbody.insertRow();
+
+    const nameCell = row.insertCell();
+    const stateCell = row.insertCell();
+    const timeCell = row.insertCell();
+
+    nameCell.textContent = employee.name ?? "Sin nombre";
+
+    stateCell.textContent =
+      stateLabels[employee.colorId] ?? "Desconocido";
+
+    timeCell.textContent = employee.time ?? "00:00:00";
+  });
+}
+
+
 function updateDashboard() {
   const employees = getEmployees();
 
@@ -37,7 +80,10 @@ function updateDashboard() {
     const count = countEmployeesByState(
       employees,
       stateId
+      
     );
+
+    renderEmployeesTable(employees);
 
     const element = document.getElementById(elementId);
 
