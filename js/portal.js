@@ -246,8 +246,17 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('ts_aux_logs', JSON.stringify(auxLogs));
     }
 
+    function formatDurationBetween(startDate, endDate) {
+        const diff = Math.max(0, Math.floor((endDate - startDate) / 1000));
+        const h = Math.floor(diff / 3600).toString().padStart(2, '0');
+        const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
     // Sincroniza cambios realizados externamente (ej. desde Gestión de Usuarios)
-    // preservando el inicio real del nuevo período sin sobrescribir el estado ni duplicar registros
+    // conservando la fecha/hora original del estado anterior antes de cerrar dailyHistory
+    // y preservando el inicio real del nuevo período sin sobrescribir ni duplicar registros
     function syncExternalChanges() {
         let currentEmps = [];
         try {
@@ -283,31 +292,24 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Conservar fecha/hora e identificador originales del estado anterior ANTES de actualizar stateStartTime
         const prevStateId = myEmp.colorId;
+        const prevStateLabel = myEmp.state;
+        const prevStateStartTime = new Date(stateStartTime.getTime());
         const now = new Date();
+        const transitionTime = startChangedExternally ? parsedStoredStart : now;
+        const closedDurationStr = prevStateId === 'end'
+            ? 'OFF'
+            : formatDurationBetween(prevStateStartTime, transitionTime);
 
         if (stateChangedExternally) {
-            if (startChangedExternally) {
-                // Gestión de Usuarios ya cerró el período anterior en ts_aux_logs y fijó el nuevo ts_state_start_<user>
-                stateStartTime = parsedStoredStart;
-            } else {
-                // Cambio externo directo en ts_employees sin actualizar ts_state_start_<user>:
-                // cerrar período anterior sin duplicar y fijar nuevo inicio
-                appendAuxLog(prevStateId, stateStartTime, now);
-                stateStartTime = now;
-                localStorage.setItem(`ts_state_start_${tsUser}`, stateStartTime.toISOString());
+            // 1. Si el cambio externo no actualizó ts_state_start_<user>, cerrar el período anterior en ts_aux_logs usando prevStateStartTime
+            if (!startChangedExternally) {
+                appendAuxLog(prevStateId, prevStateStartTime, transitionTime);
+                localStorage.setItem(`ts_state_start_${tsUser}`, transitionTime.toISOString());
             }
 
-            if (prevStateId === 'end' && extColorId !== 'end') {
-                sessionStartTime = stateStartTime;
-                localStorage.setItem(sessionKey, sessionStartTime.toISOString());
-            }
-
-            myEmp.colorId = extColorId || myEmp.colorId;
-            myEmp.state = extState || myEmp.state;
-            myEmp.time = storedEmp.time || '00:00:00';
-
-            // Recargar historial diario actualizado por Gestión sin duplicar filas
+            // 2. Actualizar y sincronizar dailyHistory ANTES de pisar stateStartTime, garantizando que la duración coincida con ts_aux_logs
             try {
                 const storedHistory = JSON.parse(localStorage.getItem(historyKey));
                 if (Array.isArray(storedHistory) && storedHistory.length > 0) {
@@ -315,20 +317,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (e) {}
 
+            const nextStateLabel = extState || myEmp.state;
+            const nextColorId = extColorId || myEmp.colorId;
             const lastEntry = dailyHistory[dailyHistory.length - 1];
-            if (!lastEntry || lastEntry.state !== myEmp.state) {
-                if (lastEntry && !lastEntry.duration) {
-                    lastEntry.duration = prevStateId === 'end' ? 'OFF' : formatTimeDiff(stateStartTime);
+
+            if (!lastEntry || lastEntry.state !== nextStateLabel) {
+                // Cerrar la fila anterior con la duración calculada desde prevStateStartTime hasta transitionTime
+                if (lastEntry) {
+                    if (!lastEntry.duration) {
+                        lastEntry.duration = closedDurationStr;
+                    }
+                } else {
+                    const prevStartLabel = prevStateStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    dailyHistory.push({
+                        time: prevStartLabel,
+                        state: prevStateLabel,
+                        color: stateHexColors[prevStateId] || '#00A669',
+                        duration: closedDurationStr
+                    });
                 }
-                const startTimeLabel = stateStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                const newStartLabel = transitionTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 dailyHistory.push({
-                    time: startTimeLabel,
-                    state: myEmp.state,
-                    color: stateHexColors[myEmp.colorId] || '#00A669',
-                    duration: myEmp.colorId === 'end' ? 'OFF' : null
+                    time: newStartLabel,
+                    state: nextStateLabel,
+                    color: stateHexColors[nextColorId] || '#00A669',
+                    duration: nextColorId === 'end' ? 'OFF' : null
                 });
                 localStorage.setItem(historyKey, JSON.stringify(dailyHistory));
+            } else if (dailyHistory.length >= 2 && !dailyHistory[dailyHistory.length - 2].duration) {
+                // Si Gestión ya agregó la fila nueva pero la anterior quedó sin duración, asegurar que tenga closedDurationStr
+                dailyHistory[dailyHistory.length - 2].duration = closedDurationStr;
+                localStorage.setItem(historyKey, JSON.stringify(dailyHistory));
             }
+
+            // 3. Ahora sí actualizar stateStartTime al inicio real del nuevo período
+            stateStartTime = transitionTime;
+
+            if (prevStateId === 'end' && nextColorId !== 'end') {
+                sessionStartTime = stateStartTime;
+                localStorage.setItem(sessionKey, sessionStartTime.toISOString());
+            }
+
+            myEmp.colorId = nextColorId;
+            myEmp.state = nextStateLabel;
+            myEmp.time = storedEmp.time || '00:00:00';
 
             const matchingBtn = Array.from(auxButtons).find(b => b.dataset.stateId === myEmp.colorId);
             const uiColor = matchingBtn ? matchingBtn.dataset.color : (stateHexColors[myEmp.colorId] || '#64748B');

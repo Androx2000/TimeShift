@@ -378,18 +378,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const historyKey = `ts_daily_history_${userKey}`;
         const dailyHistory = readList(historyKey);
-        if (dailyHistory.length > 0) {
-            if (prevStateId === 'end') {
-                dailyHistory[dailyHistory.length - 1].duration = 'OFF';
-            } else if (startDate && !isNaN(startDate.getTime()) && startDate < now) {
-                const diff = Math.max(0, Math.floor((now - startDate) / 1000));
-                const h = String(Math.floor(diff / 3600)).padStart(2, '0');
-                const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
-                const s = String(diff % 60).padStart(2, '0');
-                dailyHistory[dailyHistory.length - 1].duration = `${h}:${m}:${s}`;
-            }
+        const hexMap = { available: '#00A669', lunch: '#64748B', break: '#8B5CF6', end: '#EF4444', court: '#1D3B8B', meeting: '#F59E0B' };
+        let closedDurationStr = prevStateId === 'end' ? 'OFF' : '00:00:00';
+        if (prevStateId !== 'end' && startDate && !isNaN(startDate.getTime()) && startDate < now) {
+            const diff = Math.max(0, Math.floor((now - startDate) / 1000));
+            const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+            const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+            const s = String(diff % 60).padStart(2, '0');
+            closedDurationStr = `${h}:${m}:${s}`;
         }
-        const hexMap = { available: '#00A669', lunch: '#64748B', break: '#8B5CF6', end: '#EF4444' };
+
+        if (dailyHistory.length > 0) {
+            dailyHistory[dailyHistory.length - 1].duration = closedDurationStr;
+        } else if (startDate && !isNaN(startDate.getTime()) && startDate < now) {
+            const startStr = startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            dailyHistory.push({
+                time: startStr,
+                state: emp.state || colorIdToState[prevStateId] || 'Disponible',
+                color: hexMap[prevStateId] || '#00A669',
+                duration: closedDurationStr
+            });
+        }
         const nowStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         dailyHistory.push({
             time: nowStr,
