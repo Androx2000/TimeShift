@@ -149,4 +149,19 @@ function renderAuxChart(employees) {
 }
 
 
-updateDashboard();
+let lastEmployeesData = null;
+
+function checkForUpdates() {
+  const currentData = localStorage.getItem("ts_employees");
+
+  if (currentData !== lastEmployeesData) {
+    lastEmployeesData = currentData;
+    updateDashboard();
+  }
+}
+
+// Primera actualización.
+checkForUpdates();
+
+// Consultar cambios una vez por segundo.
+setInterval(checkForUpdates, 1000);
