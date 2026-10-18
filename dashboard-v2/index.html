@@ -9,7 +9,9 @@
   <title>TimeShift | Dashboard</title>
 
   <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js" defer></script>
+<script src="app.js" defer></script>
+  
 </head>
 
 <body>
@@ -40,6 +42,14 @@
         <p id="end-count">0</p>
       </article>
     </section>
+
+    <section class="chart-section">
+  <h2>Distribución de empleados por estado AUX</h2>
+
+  <div class="chart-container">
+    <canvas id="auxChart"></canvas>
+  </div>
+</section>
     
 <section class="employees-section">
   <h2>Monitoreo de empleados</h2>

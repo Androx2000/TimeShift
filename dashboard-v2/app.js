@@ -81,9 +81,7 @@ function updateDashboard() {
       employees,
       stateId
       
-    );
-
-    renderEmployeesTable(employees);
+    );  
 
     const element = document.getElementById(elementId);
 
@@ -91,6 +89,64 @@ function updateDashboard() {
       element.textContent = count;
     }
   }
+
+    renderEmployeesTable(employees);
+    renderAuxChart(employees);
 }
+
+
+let auxChart = null;
+
+function renderAuxChart(employees) {
+  const canvas = document.getElementById("auxChart");
+
+  if (!canvas || typeof Chart === "undefined") {
+    return;
+  }
+
+  const labels = ["Disponible", "Lunch", "Break", "Salida"];
+  const stateIds = ["available", "lunch", "break", "end"];
+
+  const counts = stateIds.map(stateId =>
+    countEmployeesByState(employees, stateId)
+  );
+
+  if (auxChart) {
+    auxChart.data.datasets[0].data = counts;
+    auxChart.update();
+    return;
+  }
+
+  auxChart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Cantidad de empleados",
+        data: counts,
+        backgroundColor: [
+          "#16A34A",
+          "#64748B",
+          "#8B5CF6",
+          "#EF4444"
+        ],
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
+        }
+      }
+    }
+  });
+}
+
 
 updateDashboard();

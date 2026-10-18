@@ -102,3 +102,16 @@ tbody tr:last-child td {
   border-bottom: none;
 }
 
+.chart-section {
+  margin-top: 32px;
+  background: white;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.chart-container {
+  position: relative;
+  height: 320px;
+  width: 100%;
+}
