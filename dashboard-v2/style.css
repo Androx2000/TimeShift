@@ -144,3 +144,20 @@ tbody tr:last-child td {
     width: 100%;
   }
 }
+
+.dashboard-nav {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.dashboard-nav a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.dashboard-nav a:hover {
+  text-decoration: underline;
+}

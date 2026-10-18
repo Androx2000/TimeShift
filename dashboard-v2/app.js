@@ -1,4 +1,23 @@
 
+function isAdmin() {
+  const user =
+    sessionStorage.getItem("ts_user") ||
+    localStorage.getItem("ts_user");
+
+  const role =
+    sessionStorage.getItem("ts_role") ||
+    localStorage.getItem("ts_role");
+
+  return Boolean(user) && role === "admin";
+}
+
+if (!isAdmin()) {
+  window.location.replace("../index.html");
+}
+
+
+
+
 function getEmployees() {
   try {
     const saved = localStorage.getItem("ts_employees");
@@ -112,9 +131,10 @@ function updateDashboard() {
     }
   }
   
-    const filteredEmployees = filterEmployees(employees);
-renderEmployeesTable(filteredEmployees);
-    renderAuxChart(employees);
+  const filteredEmployees = filterEmployees(employees);
+
+  renderEmployeesTable(filteredEmployees);
+  renderAuxChart(employees);
 }
 
 
