@@ -31,12 +31,22 @@ document.addEventListener('DOMContentLoaded', () => {
         break:     { border: 'border-[#8B5CF6]', text: 'text-[#8B5CF6]' },
         end:       { border: 'border-[#DC2626]', text: 'text-[#DC2626]' }
     };
-    // Pedido del cliente: solo 4 AUX (Disponible, Almuerzo, Break y Salida/Fin de Turno)
+    // Pedido del cliente: exactamente 4 AUX (Disponible, Lunch, Break, Salida)
     const stateToColorId = {
         'Disponible': 'available',
-        'Almuerzo': 'lunch',
+        'Lunch': 'lunch',
         'Break': 'break',
-        'Fin de Turno': 'end'
+        'Salida': 'end'
+    };
+    const colorIdToState = {
+        available: 'Disponible',
+        lunch: 'Lunch',
+        break: 'Break',
+        end: 'Salida'
+    };
+    const legacyStateMap = {
+        'Almuerzo': 'Lunch',
+        'Fin de Turno': 'Salida'
     };
     const STATES = Object.keys(stateToColorId);
 
@@ -82,9 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let punches = readList(LS_PUNCH);
 
     // Reconstruye los selects de estado para que solo existan los 4 AUX del cliente
-    // (así no hay que editar las opciones a mano en el HTML)
     (function syncStateSelects() {
-        const labels = { 'Disponible': 'Disponible (Activo)', 'Almuerzo': 'Almuerzo', 'Break': 'Break', 'Fin de Turno': 'Fin de Turno (Salida)' };
+        const labels = { 'Disponible': 'Disponible (Activo)', 'Lunch': 'Lunch', 'Break': 'Break', 'Salida': 'Salida' };
         const build = (id, withAll) => {
             const sel = $(id);
             if (!sel) return;
@@ -265,15 +274,103 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentVal && employees.some((e) => String(e.id) === currentVal)) select.value = currentVal;
     }
 
+    function normalizeEmployeeState(emp) {
+        if (!emp) return emp;
+        if (legacyStateMap[emp.state]) emp.state = legacyStateMap[emp.state];
+        if (emp.colorId && colorIdToState[emp.colorId]) {
+            emp.state = colorIdToState[emp.colorId];
+        } else if (stateToColorId[emp.state]) {
+            emp.colorId = stateToColorId[emp.state];
+        } else {
+            emp.colorId = 'available';
+            emp.state = 'Disponible';
+        }
+        return emp;
+    }
+
+    function recordManualAuxChange(emp, newColorId, newStateLabel) {
+        const userKey = String(emp.email || '').split('@')[0].trim().toLowerCase() || `emp_${emp.id}`;
+        const prevStateId = emp.colorId || stateToColorId[emp.state] || 'available';
+        if (prevStateId === newColorId) return;
+
+        const now = new Date();
+        const savedStartStr = localStorage.getItem(`ts_state_start_${userKey}`);
+        let startDate = savedStartStr ? new Date(savedStartStr) : null;
+
+        if (!startDate || isNaN(startDate.getTime()) || startDate >= now) {
+            // Fallback to emp.time if available
+            const parts = String(emp.time || '').split(':').map(Number);
+            const durSec = parts.length === 3 ? (parts[0] * 3600 + parts[1] * 60 + parts[2]) : 0;
+            if (durSec > 0) {
+                startDate = new Date(now.getTime() - durSec * 1000);
+            }
+        }
+
+        // 1. Si el estado previo no era Salida ('end') y tiene duración válida, registrar en ts_aux_logs sin duplicados
+        if (prevStateId && prevStateId !== 'end' && startDate && !isNaN(startDate.getTime()) && startDate < now) {
+            const startMs = startDate.getTime();
+            const startIso = startDate.toISOString();
+            const endIso = now.toISOString();
+            const recordId = `aux_${userKey}_${startMs}_${prevStateId}`;
+
+            const auxLogs = readList('ts_aux_logs');
+            const existingIdx = auxLogs.findIndex(
+                (r) => r && (r.id === recordId || (r.user === userKey && r.stateId === prevStateId && r.start === startIso))
+            );
+            const logEntry = {
+                id: recordId,
+                user: userKey,
+                name: emp.name,
+                cargo: emp.role || 'Empleado',
+                stateId: prevStateId,
+                start: startIso,
+                end: endIso
+            };
+            if (existingIdx !== -1) {
+                auxLogs[existingIdx] = logEntry;
+            } else {
+                auxLogs.push(logEntry);
+            }
+            saveList('ts_aux_logs', auxLogs);
+        }
+
+        // 2. Actualizar ts_state_start_<user> y ts_daily_history_<user> para consistencia con Portal AUX
+        localStorage.setItem(`ts_state_start_${userKey}`, now.toISOString());
+
+        const historyKey = `ts_daily_history_${userKey}`;
+        const dailyHistory = readList(historyKey);
+        if (dailyHistory.length > 0) {
+            if (prevStateId === 'end') {
+                dailyHistory[dailyHistory.length - 1].duration = 'OFF';
+            } else if (startDate && !isNaN(startDate.getTime()) && startDate < now) {
+                const diff = Math.max(0, Math.floor((now - startDate) / 1000));
+                const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+                const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+                const s = String(diff % 60).padStart(2, '0');
+                dailyHistory[dailyHistory.length - 1].duration = `${h}:${m}:${s}`;
+            }
+        }
+        const hexMap = { available: '#00A669', lunch: '#64748B', break: '#8B5CF6', end: '#EF4444' };
+        const nowStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        dailyHistory.push({
+            time: nowStr,
+            state: newStateLabel,
+            color: hexMap[newColorId] || '#00A669',
+            duration: newColorId === 'end' ? 'OFF' : null
+        });
+        saveList(historyKey, dailyHistory);
+    }
+
     function renderEmployees() {
-        employees = readList(LS_EMP);
+        employees = readList(LS_EMP).map(normalizeEmployeeState);
         updateEmployeeSelect();
 
         // KPIs
+        const isInactive = (e) => e.colorId === 'end' || e.state === 'Salida' || e.state === 'Fin de Turno';
         $('kpi-total-employees').textContent = employees.length;
-        $('kpi-active-employees').textContent = employees.filter((e) => e.state !== 'Fin de Turno').length;
+        $('kpi-active-employees').textContent = employees.filter((e) => !isInactive(e)).length;
         $('kpi-departments-count').textContent = new Set(employees.map((e) => e.department)).size;
-        $('kpi-inactive-employees').textContent = employees.filter((e) => e.state === 'Fin de Turno').length;
+        $('kpi-inactive-employees').textContent = employees.filter((e) => isInactive(e)).length;
 
         const tbody = $('table-employees-body');
         if (!tbody) return;
@@ -370,6 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formAdd.reset();
         showErrors(EMP_FIELDS, {});
         if (emp) {
+            normalizeEmployeeState(emp);
             $('input-name').value = emp.name;
             $('input-email').value = emp.email;
             $('input-role').value = emp.role;
@@ -422,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     formAdd.addEventListener('submit', async (e) => {
         e.preventDefault();
-        employees = readList(LS_EMP); // datos frescos (el dashboard también escribe aquí)
+        employees = readList(LS_EMP).map(normalizeEmployeeState); // datos frescos
 
         const data = readEmployeeForm();
         const errors = validateEmployee(data, currentEditId);
@@ -457,6 +555,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon: 'question'
             });
             if (!ok) return;
+
+            const stateChanged = emp.colorId !== colorId || emp.state !== data.state;
+            if (stateChanged) {
+                recordManualAuxChange(emp, colorId, data.state);
+                emp.time = '00:00:00';
+            }
+
             Object.assign(emp, data, { colorId });
             saveList(LS_EMP, employees);
             closeEmployeeModal();
@@ -465,6 +570,8 @@ document.addEventListener('DOMContentLoaded', () => {
             notify('success', 'Empleado actualizado con éxito');
         } else {
             const newId = employees.length ? Math.max(...employees.map((x) => Number(x.id) || 0)) + 1 : 1;
+            const userKey = String(data.email || '').split('@')[0].trim().toLowerCase() || `emp_${newId}`;
+            localStorage.setItem(`ts_state_start_${userKey}`, new Date().toISOString());
             employees.push({ id: newId, ...data, time: '00:00:00', colorId });
             saveList(LS_EMP, employees);
             closeEmployeeModal();
