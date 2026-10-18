@@ -70,8 +70,14 @@ const TimeShiftAuth = (() => {
   }
 
   function logout() {
-    localStorage.removeItem(SESSION_KEY);
-    window.location.href = "index.html";
+    try {
+      sessionStorage.clear();
+      [SESSION_KEY, "ts_user", "ts_role", "ts_name", "ts_cargo"].forEach((k) =>
+        localStorage.removeItem(k)
+      );
+    } catch (e) {}
+    const isSubdir = window.location.pathname.includes("/dashboard-v2/");
+    window.location.href = isSubdir ? "../index.html" : "index.html";
   }
 
   /**
@@ -79,11 +85,19 @@ const TimeShiftAuth = (() => {
    * Admin y empleado inician sesión con usuario/contraseña (ya no hay
    * ingreso por PIN/Kiosk); cada rol cae en su propia vista.
    */
-  function routeForRole(rol) {
-    if (rol === "admin") return "dashboard.html";
-    if (rol === "empleado") return "portal.html";
-    return "index.html";
+ 
+function routeForRole(rol) {
+  if (rol === "admin") {
+    return "dashboard-v2/index.html";
   }
+
+  if (rol === "empleado") {
+    return "portal.html";
+  }
+
+  return "index.html";
+}
+
 
   /**
    * Guardia de acceso para páginas protegidas: si no hay sesión, o el rol
