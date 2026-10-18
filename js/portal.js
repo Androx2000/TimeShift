@@ -68,6 +68,20 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         employees.push(myEmp);
         localStorage.setItem('ts_employees', JSON.stringify(employees));
+    } else {
+        // Normalize active state on employee object to the 4 official client states
+        const officialLabels = {
+            available: 'Disponible',
+            lunch: 'Lunch',
+            break: 'Break',
+            end: 'Salida'
+        };
+        if (myEmp.state === 'Almuerzo') myEmp.colorId = 'lunch';
+        if (myEmp.state === 'Fin de Turno') myEmp.colorId = 'end';
+        if (!officialLabels[myEmp.colorId]) {
+            myEmp.colorId = 'available';
+        }
+        myEmp.state = officialLabels[myEmp.colorId];
     }
 
     const stateHeading = document.getElementById('current-state-heading');
@@ -83,7 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let stateStartTime = new Date();
     const savedStartTime = localStorage.getItem(`ts_state_start_${tsUser}`);
     if (savedStartTime) {
-        stateStartTime = new Date(savedStartTime);
+        const parsedStart = new Date(savedStartTime);
+        if (!isNaN(parsedStart.getTime()) && parsedStart <= stateStartTime) {
+            stateStartTime = parsedStart;
+        } else {
+            localStorage.setItem(`ts_state_start_${tsUser}`, stateStartTime.toISOString());
+        }
     } else {
         localStorage.setItem(`ts_state_start_${tsUser}`, stateStartTime.toISOString());
     }
@@ -102,7 +121,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Seed initial daily history row if empty
     if (dailyHistory.length === 0) {
         const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        dailyHistory.push({ time: nowStr, state: myEmp.state, color: '#16A34A', duration: null });
+        const initColorMap = { available: '#00A669', lunch: '#64748B', break: '#8B5CF6', end: '#EF4444' };
+        dailyHistory.push({
+            time: nowStr,
+            state: myEmp.state,
+            color: initColorMap[myEmp.colorId] || '#00A669',
+            duration: null
+        });
         localStorage.setItem(historyKey, JSON.stringify(dailyHistory));
     }
 
@@ -160,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function syncEmployeeToStorage(timeOverride) {
         let currentEmps = JSON.parse(localStorage.getItem('ts_employees')) || [];
-        const empIndex = currentEmps.findIndex(e => e.id === myEmp.id || (e.email && e.email.startsWith(tsUser + '@')));
+        const empIndex = currentEmps.findIndex(e => e.id === myEmp.id || (e.email && e.email.toLowerCase().startsWith(tsUser.toLowerCase() + '@')));
         if (timeOverride !== undefined) {
             myEmp.time = timeOverride;
         }
@@ -170,6 +195,48 @@ document.addEventListener('DOMContentLoaded', () => {
             currentEmps.push(myEmp);
         }
         localStorage.setItem('ts_employees', JSON.stringify(currentEmps));
+    }
+
+    function appendAuxLog(prevStateId, startDate, endDate) {
+        if (!prevStateId || prevStateId === 'end') return;
+        if (!(startDate instanceof Date) || !(endDate instanceof Date)) return;
+        const startMs = startDate.getTime();
+        const endMs = endDate.getTime();
+        if (isNaN(startMs) || isNaN(endMs) || endMs <= startMs) return;
+
+        let auxLogs = [];
+        try {
+            auxLogs = JSON.parse(localStorage.getItem('ts_aux_logs')) || [];
+            if (!Array.isArray(auxLogs)) auxLogs = [];
+        } catch (e) {
+            auxLogs = [];
+        }
+
+        const startIso = startDate.toISOString();
+        const endIso = endDate.toISOString();
+        const recordId = `aux_${tsUser}_${startMs}_${prevStateId}`;
+
+        const existingIdx = auxLogs.findIndex(
+            r => r && (r.id === recordId || (r.user === tsUser && r.stateId === prevStateId && r.start === startIso))
+        );
+
+        const logEntry = {
+            id: recordId,
+            user: tsUser,
+            name: myEmp.name || tsName || tsUser,
+            cargo: myEmp.role || tsCargo || 'Empleado',
+            stateId: prevStateId,
+            start: startIso,
+            end: endIso
+        };
+
+        if (existingIdx !== -1) {
+            auxLogs[existingIdx] = logEntry;
+        } else {
+            auxLogs.push(logEntry);
+        }
+
+        localStorage.setItem('ts_aux_logs', JSON.stringify(auxLogs));
     }
 
     function parseTimeToMinutes(str) {
@@ -237,37 +304,45 @@ document.addEventListener('DOMContentLoaded', () => {
         if (myEmp.colorId === stateId) return;
 
         const now = new Date();
-        
-        // Update duration of the PREVIOUS state if exists
+        const prevStateId = myEmp.colorId;
+
+        // 1. Close previous state period in ts_aux_logs BEFORE resetting stateStartTime
+        appendAuxLog(prevStateId, stateStartTime, now);
+
+        // 2. Update duration of the PREVIOUS state in portal dailyHistory
         if (dailyHistory.length > 0) {
-            const diff = Math.floor((now - stateStartTime) / 1000);
-            const h = Math.floor(diff / 3600).toString().padStart(2, '0');
-            const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-            const s = (diff % 60).toString().padStart(2, '0');
-            dailyHistory[dailyHistory.length - 1].duration = `${h}:${m}:${s}`;
+            if (prevStateId === 'end') {
+                dailyHistory[dailyHistory.length - 1].duration = 'OFF';
+            } else {
+                const diff = Math.max(0, Math.floor((now - stateStartTime) / 1000));
+                const h = Math.floor(diff / 3600).toString().padStart(2, '0');
+                const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+                const s = (diff % 60).toString().padStart(2, '0');
+                dailyHistory[dailyHistory.length - 1].duration = `${h}:${m}:${s}`;
+            }
         }
 
-        // Reset timer
+        // 3. Reset timer for the new state
         stateStartTime = now;
         localStorage.setItem(`ts_state_start_${tsUser}`, stateStartTime.toISOString());
 
         // Si regresa desde Salida, empieza una nueva sesión
-        if (myEmp.colorId === 'end') {
+        if (prevStateId === 'end') {
             sessionStartTime = now;
             localStorage.setItem(sessionKey, sessionStartTime.toISOString());
         }
 
-        // Update Employee object
+        // 4. Update Employee object
         myEmp.state = stateLabel;
         myEmp.colorId = stateId;
-        myEmp.time = (stateId === 'end') ? '00:00:00' : '00:00:00';
+        myEmp.time = '00:00:00';
 
-        // Add to daily history (new state)
+        // 5. Add to daily history (new state)
         const nowStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        dailyHistory.push({ time: nowStr, state: stateLabel, color: color, duration: null });
+        dailyHistory.push({ time: nowStr, state: stateLabel, color: color, duration: (stateId === 'end') ? 'OFF' : null });
         localStorage.setItem(historyKey, JSON.stringify(dailyHistory));
 
-        // Sync to ts_employees and ts_punches
+        // 6. Sync to ts_employees and ts_punches
         syncEmployeeToStorage('00:00:00');
         syncPunchRecord(stateLabel, stateId);
 
