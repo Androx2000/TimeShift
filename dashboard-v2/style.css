@@ -115,3 +115,32 @@ tbody tr:last-child td {
   height: 320px;
   width: 100%;
 }
+
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.filters input,
+.filters select {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+
+.filters input {
+  flex: 1;
+  min-width: 200px;
+}
+
+@media (max-width: 480px) {
+  .filters input,
+  .filters select {
+    width: 100%;
+  }
+}

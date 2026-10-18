@@ -90,7 +90,33 @@ function updateDashboard() {
     }
   }
 
-    renderEmployeesTable(employees);
+  
+function filterEmployees(employees) {
+  const search = document
+    .getElementById("employee-search")
+    .value.trim().toLocaleLowerCase();
+
+  const selectedState = document
+    .getElementById("state-filter")
+    .value;
+
+  return employees.filter(employee => {
+    const name = String(employee.name ?? "")
+      .toLocaleLowerCase();
+
+    const matchesName = name.includes(search);
+
+    const matchesState =
+      selectedState === "all" ||
+      employee.colorId === selectedState;
+
+    return matchesName && matchesState;
+  });
+}
+
+
+    const filteredEmployees = filterEmployees(employees);
+renderEmployeesTable(filteredEmployees);
     renderAuxChart(employees);
 }
 
@@ -165,3 +191,11 @@ checkForUpdates();
 
 // Consultar cambios una vez por segundo.
 setInterval(checkForUpdates, 1000);
+
+document
+  .getElementById("employee-search")
+  .addEventListener("input", updateDashboard);
+
+document
+  .getElementById("state-filter")
+  .addEventListener("change", updateDashboard);

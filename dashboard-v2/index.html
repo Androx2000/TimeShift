@@ -52,7 +52,26 @@
 </section>
     
 <section class="employees-section">
-  <h2>Monitoreo de empleados</h2>
+  <h2>Monitoreo de empleados</h2>  
+
+  
+<div class="filters">
+  <input
+    type="search"
+    id="employee-search"
+    placeholder="Buscar empleado..."
+    aria-label="Buscar empleado por nombre"
+  >
+
+  <select id="state-filter" aria-label="Filtrar por estado AUX">
+    <option value="all">Todos los estados</option>
+    <option value="available">Disponible</option>
+    <option value="lunch">Lunch</option>
+    <option value="break">Break</option>
+    <option value="end">Salida</option>
+  </select>
+</div>
+
 
   <div class="table-container">
     <table>
@@ -64,11 +83,15 @@
         </tr>
       </thead>
 
+      
+
       <tbody id="employees-table-body">
       </tbody>
     </table>
   </div>  
 </section>
+
+
   </main>
 </body>
 </html>
