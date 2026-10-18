@@ -29,17 +29,17 @@ dialog::backdrop{background:rgba(15,23,42,.5)}
 
 <header class="bg-[#111827] text-white flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-8 py-3.5 sm:py-4 sticky top-0 z-50 gap-3 md:gap-0 border-b border-slate-800">
   <div class="flex items-center justify-between w-full md:w-auto">
-    <div class="flex items-baseline gap-2.5">
-      <h1 class="text-xl font-bold tracking-tight">TimeShift</h1>
+    <a href="dashboard-v2/index.html" class="flex items-baseline gap-2.5 group">
+      <h1 class="text-xl font-bold tracking-tight group-hover:text-primary transition-colors">TimeShift</h1>
       <span id="hdr-badge" class="inline-block whitespace-nowrap rounded-[0.27rem] bg-[#2e2005] text-amber-400 px-[0.65em] pb-[0.25em] pt-[0.35em] text-[0.75em] font-bold leading-none">Admin</span>
-    </div>
+    </a>
     <button class="bouncy-btn md:hidden text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-slate-800" title="Cerrar sesión" onclick="tsLogout()">Salir</button>
   </div>
   <div class="flex-1 w-full md:w-auto overflow-x-auto hide-scrollbar py-1 md:py-0">
     <nav class="flex gap-2 sm:gap-4 md:gap-6 text-sm font-medium text-slate-400 whitespace-nowrap md:px-6">
-      <a href="dashboard.html" class="hover:text-white px-3 py-1.5 rounded-lg transition-colors bouncy-btn">Monitor en Tiempo Real</a>
+      <a href="dashboard-v2/index.html" class="hover:text-white px-3 py-1.5 rounded-lg transition-colors bouncy-btn">Monitor en Tiempo Real</a>
       <a href="reportes.html" class="text-white bg-slate-800/80 px-3 py-1.5 rounded-lg bouncy-btn">Reportes</a>
-      <a href="dashboard.html" class="hover:text-white px-3 py-1.5 rounded-lg transition-colors bouncy-btn">Directorio de Personal</a>
+      <a href="gestion de datos.html" class="hover:text-white px-3 py-1.5 rounded-lg transition-colors bouncy-btn">Directorio de Personal</a>
       <a href="gestion de datos.html" class="hover:text-white px-3 py-1.5 rounded-lg transition-colors bouncy-btn">Gestión de Datos</a>
     </nav>
   </div>
@@ -63,8 +63,8 @@ dialog::backdrop{background:rgba(15,23,42,.5)}
     </div>
   </div>
 
-  <div id="demo-banner" class="hidden mb-4 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-2.5">
-    Se están mostrando <b>datos de demostración</b> porque no se encontraron registros AUX en <code>localStorage</code> (<code>ts_aux_logs</code>). Se llenan cuando los empleados cambian de estado en <code>portal.html</code>.
+  <div id="demo-banner" class="hidden mb-4 text-xs bg-blue-50 border border-blue-200 text-blue-800 rounded-lg px-4 py-2.5">
+    No hay registros disponibles en <code>localStorage</code> (<code>ts_aux_logs</code>). Los registros se generan en tiempo real cuando los empleados cambian de estado en <code>portal.html</code> o desde <code>gestion de datos.html</code>.
   </div>
 
   <!-- Filtros -->
@@ -91,7 +91,7 @@ dialog::backdrop{background:rgba(15,23,42,.5)}
     <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><h3 class="text-xs font-medium text-slate-500 mb-1">Registros</h3><div id="k-count" class="text-3xl font-bold text-brandBlue">0</div></div>
     <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><h3 class="text-xs font-medium text-slate-500 mb-1">Tiempo total registrado</h3><div id="k-total" class="text-3xl font-bold text-success font-mono">0</div></div>
     <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><h3 class="text-xs font-medium text-slate-500 mb-1">Duración promedio</h3><div id="k-avg" class="text-3xl font-bold font-mono">0</div></div>
-    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><h3 class="text-xs font-medium text-slate-500 mb-1">Pausas (Almuerzo + Break)</h3><div id="k-pause" class="text-3xl font-bold text-warning font-mono">0</div></div>
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><h3 class="text-xs font-medium text-slate-500 mb-1">Pausas (Lunch + Break)</h3><div id="k-pause" class="text-3xl font-bold text-warning font-mono">0</div></div>
   </section>
 
   <!-- Resumen + gráfica -->
@@ -146,12 +146,30 @@ dialog::backdrop{background:rgba(15,23,42,.5)}
 
 <script>
 /* ===================== CONFIG ===================== */
+// 4 estados activos oficiales requeridos por el cliente
 const STATES = {
-  available:{label:'Disponible',color:'#00A669'}, court:{label:'En Tribunal',color:'#1D3B8B'},
-  meeting:{label:'Reunión con Cliente',color:'#F59E0B'}, lunch:{label:'Almuerzo',color:'#64748B'},
-  break:{label:'Break',color:'#8B5CF6'}
+  available: { label: 'Disponible', color: '#00A669' },
+  lunch:     { label: 'Lunch',      color: '#64748B' },
+  break:     { label: 'Break',      color: '#8B5CF6' },
+  end:       { label: 'Salida',     color: '#EF4444' }
 };
-const STAFF = [['aruiz','Andrea Ruiz','Abogada Litigante'],['mportillo','Marcela Portillo','Abogada Corporativa'],['jhenriquez','Javier Henríquez','Asistente Legal'],['lcastro','Luis Castro','Asistente Legal'],['rflores','Roxana Flores','Recepción'],['ppineda','Patricia Pineda','Contabilidad'],['esantos','Eduardo Santos','Mensajería / Notificador']];
+// Estados históricos heredados (se conservan intactos si existen en registros previos, sin mostrarse como activos seleccionables)
+const HISTORICAL_STATES = {
+  court:   { label: 'En Tribunal',         color: '#1D3B8B' },
+  meeting: { label: 'Reunión con Cliente', color: '#F59E0B' }
+};
+const ALL_STATE_DEFS = { ...STATES, ...HISTORICAL_STATES };
+const LEGACY_STATE_ALIASES = {
+  'disponible': 'available',
+  'lunch': 'lunch',
+  'almuerzo': 'lunch',
+  'break': 'break',
+  'salida': 'end',
+  'fin de turno': 'end',
+  'en tribunal': 'court',
+  'reunión con cliente': 'meeting',
+  'reunion con cliente': 'meeting'
+};
 const LOG_KEYS = ['ts_aux_logs'];
 const PAGE = 15;
 
@@ -165,50 +183,115 @@ const fmtDur = s => { s=Math.round(s); const h=Math.floor(s/3600), m=Math.floor(
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ===================== DATOS ===================== */
+function resolveStateId(rawSid) {
+  const s = String(rawSid || '').trim();
+  if (ALL_STATE_DEFS[s]) return s;
+  const lower = s.toLowerCase();
+  if (ALL_STATE_DEFS[lower]) return lower;
+  return LEGACY_STATE_ALIASES[lower] || '';
+}
+
 function normalize(r){
-  const sid = r.stateId||r.state||r.estado||'';
-  const st = STATES[sid]; if(!st) return null;
-  const start = new Date(r.start||r.inicio), end = new Date(r.end||r.fin);
-  if(isNaN(start)||isNaN(end)||end<=start) return null;
-  return {user:r.user||r.usuario||r.empId||'', name:r.name||r.empName||r.empleado||r.user||'—', cargo:r.cargo||'—',
-          sid, label:st.label, start, end, dur:(end-start)/1000};
+  if (!r || typeof r !== 'object') return null;
+  const sid = resolveStateId(r.stateId || r.state || r.estado);
+  const st = ALL_STATE_DEFS[sid];
+  if (!st) return null;
+  const start = new Date(r.start || r.inicio), end = new Date(r.end || r.fin);
+  if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) return null;
+  const user = String(r.user || r.usuario || r.empId || '').trim().toLowerCase();
+  return {
+    id: r.id || `aux_${user}_${start.getTime()}_${sid}`,
+    user,
+    name: r.name || r.empName || r.empleado || r.user || '—',
+    cargo: r.cargo || r.role || '—',
+    sid,
+    label: st.label,
+    color: st.color,
+    start,
+    end,
+    dur: (end - start) / 1000
+  };
 }
-function demo(){ // generador determinista para pruebas
-  let seed=42; const rnd=()=> (seed=(seed*16807)%2147483647)/2147483647; const out=[];
-  const plan=[['available',70],['court',90],['break',15],['meeting',60],['available',40],['lunch',55],['court',75],['meeting',45],['break',12],['available',50]];
-  for(let d=0; d<20; d++){
-    const day=new Date(); day.setDate(day.getDate()-d); if([0,6].includes(day.getDay())) continue;
-    STAFF.forEach(([u,n,c])=>{ let t=new Date(day.getFullYear(),day.getMonth(),day.getDate(),8,Math.floor(rnd()*10),0);
-      plan.forEach(([sid,min])=>{ const dur=Math.max(5,min+Math.round((rnd()-.5)*min*.5))*60; const e=new Date(t.getTime()+dur*1000);
-        out.push({user:u,name:n,cargo:c,stateId:sid,start:t.toISOString(),end:e.toISOString()}); t=e; }); });
-  } return out;
-}
+
 let ALL=[], VIEW=[], sort={k:'start',dir:-1}, page=0, chart;
-function liveSegments(){ // estado en curso de cada empleado (portal.js: ts_employees + ts_state_start_<user>)
+function liveSegments(closedLogs){ // estado activo en curso de cada empleado (ts_employees + ts_state_start_<user>)
   const out=[], now=new Date();
-  try{ (JSON.parse(localStorage.getItem('ts_employees'))||[]).forEach(e=>{
-    const u=(e.email||'').split('@')[0], st=localStorage.getItem('ts_state_start_'+u);
-    if(!st||!STATES[e.colorId]) return; const d=(now-new Date(st))/36e5; if(d<0||d>12) return;
-    out.push({user:u,name:e.name,cargo:e.role,stateId:e.colorId,start:st,end:now.toISOString()}); }); }catch(e){}
+  try{
+    (JSON.parse(localStorage.getItem('ts_employees'))||[]).forEach(e=>{
+      const u = String(e.email||'').split('@')[0].trim().toLowerCase();
+      const st = localStorage.getItem('ts_state_start_'+u);
+      const sid = resolveStateId(e.colorId || e.state);
+      // Excluir 'end' (Salida) de segmentos activos en curso
+      if(!u || !st || !STATES[sid] || sid === 'end') return;
+      const startDate = new Date(st);
+      if (isNaN(startDate.getTime())) return;
+      const d = (now - startDate) / 36e5;
+      if (d <= 0 || d > 12) return;
+      // Evitar duplicar un período que ya fue cerrado en ts_aux_logs
+      const startIso = startDate.toISOString();
+      const alreadyClosed = Array.isArray(closedLogs) && closedLogs.some(
+        c => c && String(c.user||'').toLowerCase() === u && c.start === startIso
+      );
+      if (alreadyClosed) return;
+      out.push({
+        id: `live_${u}_${startDate.getTime()}_${sid}`,
+        user: u,
+        name: e.name,
+        cargo: e.role || 'Empleado',
+        stateId: sid,
+        start: startIso,
+        end: now.toISOString()
+      });
+    });
+  }catch(e){}
   return out;
 }
+
 function load(){
-  let raw=[]; for(const k of LOG_KEYS){ try{ const v=JSON.parse(localStorage.getItem(k)||'[]'); if(Array.isArray(v)&&v.length){raw=v;break;} }catch(e){} }
-  raw=raw.concat(liveSegments());
-  const isDemo = !raw.length; if(isDemo) raw=demo();
-  $('demo-banner').classList.toggle('hidden',!isDemo);
-  ALL = raw.map(normalize).filter(Boolean);
+  let closed=[];
+  for(const k of LOG_KEYS){
+    try{
+      const v=JSON.parse(localStorage.getItem(k)||'[]');
+      if(Array.isArray(v)&&v.length){closed=v;break;}
+    }catch(e){}
+  }
+  const combined = closed.concat(liveSegments(closed));
+  const seen = new Set();
+  ALL = [];
+  combined.forEach(item => {
+    const norm = normalize(item);
+    if (!norm) return;
+    const dedupKey = `${norm.user}_${norm.start.getTime()}_${norm.sid}`;
+    if (seen.has(dedupKey)) return;
+    seen.add(dedupKey);
+    ALL.push(norm);
+  });
+  $('demo-banner').classList.toggle('hidden', ALL.length > 0);
 }
 
 /* ===================== FILTROS ===================== */
 function fillSelect(el, items, first){ el.innerHTML = `<option value="">${first}</option>` + items.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join(''); }
 function fillFilters(){
   const keep=['f-emp','f-cargo','f-state'].map(i=>$(i).value);
-  const emps=[...new Map(ALL.map(r=>[r.user,r.name])).entries()].sort((a,b)=>a[1].localeCompare(b[1]));
+  const empMap = new Map();
+  const cargoSet = new Set();
+  try {
+    (JSON.parse(localStorage.getItem('ts_employees')) || []).forEach(e => {
+      const u = String(e.email || '').split('@')[0].trim().toLowerCase();
+      if (u && e.name) empMap.set(u, e.name);
+      if (e.role) cargoSet.add(e.role);
+    });
+  } catch (e) {}
+  ALL.forEach(r => {
+    if (r.user && r.name) empMap.set(r.user, r.name);
+    if (r.cargo && r.cargo !== '—') cargoSet.add(r.cargo);
+  });
+  const emps=[...empMap.entries()].sort((a,b)=>a[1].localeCompare(b[1]));
   fillSelect($('f-emp'),emps,'Todos');
-  fillSelect($('f-cargo'),[...new Set(ALL.map(r=>r.cargo))].sort().map(c=>[c,c]),'Todos');
+  fillSelect($('f-cargo'),[...cargoSet].sort().map(c=>[c,c]),'Todos');
+  // Solo mostrar estados activos del cliente en el selector de filtro
   fillSelect($('f-state'),Object.entries(STATES).map(([k,v])=>[k,v.label]),'Todos');
-  ['f-emp','f-cargo','f-state'].forEach((i,k)=>$(i).value=keep[k]);
+  ['f-emp','f-cargo','f-state'].forEach((i,k)=>{ if ([...$(i).options].some(o => o.value === keep[k])) $(i).value=keep[k]; });
 }
 function initFilters(){ fillFilters(); setRange(13); }
 function setRange(days){ const t=new Date(), f=new Date(); f.setDate(t.getDate()-days); $('f-from').value=ymd(f); $('f-to').value=ymd(t); apply(); }
@@ -222,9 +305,9 @@ function apply(){
 function filterText(){
   const f=filters(), p=[];
   p.push(`período del ${f.from?dmy(new Date(f.from+'T00:00')):'inicio'} al ${f.to?dmy(new Date(f.to+'T00:00')):'fin'}`);
-  if(f.emp) p.push('empleado: '+$('f-emp').selectedOptions[0].text);
+  if(f.emp && $('f-emp').selectedOptions[0]) p.push('empleado: '+$('f-emp').selectedOptions[0].text);
   if(f.cargo) p.push('cargo: '+f.cargo);
-  if(f.state) p.push('estado: '+STATES[f.state].label);
+  if(f.state && ALL_STATE_DEFS[f.state]) p.push('estado: '+ALL_STATE_DEFS[f.state].label);
   if(f.min) p.push(`duración mínima de ${f.min} min`);
   return p.join('; ');
 }
@@ -232,14 +315,14 @@ function filterText(){
 /* ===================== RENDER ===================== */
 function summary(){
   const tot=VIEW.reduce((a,r)=>a+r.dur,0);
-  return Object.entries(STATES).map(([k,v])=>{ const rs=VIEW.filter(r=>r.sid===k), t=rs.reduce((a,r)=>a+r.dur,0);
+  return Object.entries(ALL_STATE_DEFS).map(([k,v])=>{ const rs=VIEW.filter(r=>r.sid===k), t=rs.reduce((a,r)=>a+r.dur,0);
     return {sid:k,label:v.label,color:v.color,n:rs.length,total:t,avg:rs.length?t/rs.length:0,pct:tot?t/tot*100:0}; }).filter(s=>s.n);
 }
 function render(){
   const tot=VIEW.reduce((a,r)=>a+r.dur,0), pause=VIEW.filter(r=>r.sid==='lunch'||r.sid==='break').reduce((a,r)=>a+r.dur,0);
   $('k-count').textContent=VIEW.length; $('k-total').textContent=fmtDur(tot); $('k-avg').textContent=VIEW.length?fmtDur(tot/VIEW.length):'—'; $('k-pause').textContent=fmtDur(pause);
   const S=summary();
-  $('sum-body').innerHTML = S.length? S.map(s=>`<tr class="border-b border-slate-100"><td class="py-2"><span class="inline-block w-2.5 h-2.5 rounded-full mr-2" style="background:${s.color}"></span>${s.label}</td><td class="text-right">${s.n}</td><td class="text-right font-mono">${fmtDur(s.total)}</td><td class="text-right font-mono">${fmtDur(s.avg)}</td><td class="text-right">${s.pct.toFixed(1)}%</td></tr>`).join('') : '<tr><td colspan="5" class="py-6 text-center text-slate-400">Sin datos</td></tr>';
+  $('sum-body').innerHTML = S.length? S.map(s=>`<tr class="border-b border-slate-100"><td class="py-2"><span class="inline-block w-2.5 h-2.5 rounded-full mr-2" style="background:${s.color}"></span>${s.label}</td><td class="text-right">${s.n}</td><td class="text-right font-mono">${fmtDur(s.total)}</td><td class="text-right font-mono">${fmtDur(s.avg)}</td><td class="text-right">${s.pct.toFixed(1)}%</td></tr>`).join('') : '<tr><td colspan="5" class="py-6 text-center text-slate-400">No hay registros disponibles</td></tr>';
   drawChart(S); renderTable();
 }
 function drawChart(S){
@@ -253,9 +336,9 @@ function renderTable(){
   const rows=sorted(), pages=Math.max(1,Math.ceil(rows.length/PAGE)); page=Math.min(page,pages-1);
   const slice=rows.slice(page*PAGE,page*PAGE+PAGE);
   $('t-body').innerHTML = slice.length? slice.map(r=>`<tr class="hover:bg-slate-50"><td class="px-5 py-2.5">${dmy(r.start)}</td><td class="px-3 font-medium">${esc(r.name)}</td><td class="px-3 text-slate-500">${esc(r.cargo)}</td>
-    <td class="px-3"><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-white" style="background:${STATES[r.sid].color}">${r.label}</span></td>
+    <td class="px-3"><span class="text-xs font-semibold px-2 py-0.5 rounded-full text-white" style="background:${(ALL_STATE_DEFS[r.sid]&&ALL_STATE_DEFS[r.sid].color)||'#64748B'}">${esc(r.label)}</span></td>
     <td class="px-3 font-mono text-xs">${hms(r.start)}</td><td class="px-3 font-mono text-xs">${hms(r.end)}</td><td class="px-5 text-right font-mono">${fmtDur(r.dur)}</td></tr>`).join('')
-    : '<tr><td colspan="7" class="py-10 text-center text-slate-400">No hay registros con los filtros actuales.</td></tr>';
+    : '<tr><td colspan="7" class="py-10 text-center text-slate-400">No hay registros disponibles.</td></tr>';
   $('t-info').textContent=`${rows.length} registros`; $('pg-label').textContent=`Página ${page+1} de ${pages}`;
   $('pg-prev').disabled=page===0; $('pg-next').disabled=page>=pages-1;
 }
@@ -365,7 +448,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('hdr-avatar').src=`https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(n)}&backgroundColor=1e293b`;
   load(); initFilters();
   window.addEventListener('storage',e=>{ if(e.key&&/^ts_(aux_logs|employees|state_start)/.test(e.key)){ load(); fillFilters(); apply(); } });
-  ['f-from','f-to','f-emp','f-cargo','f-state','f-min'].forEach(id=>$(id).addEventListener('input',apply));
+  ['f-from','f-to','f-emp','f-cargo','f-state','f-min'].forEach(id=>{$(id).addEventListener('input',apply);$(id).addEventListener('change',apply);});
   document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>setRange(+b.dataset.days)));
   $('f-reset').addEventListener('click',()=>{['f-emp','f-cargo','f-state'].forEach(i=>$(i).value='');$('f-min').value=0;setRange(13);});
   document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>{ const k=th.dataset.k; sort={k,dir:sort.k===k?-sort.dir:1}; renderTable(); }));
