@@ -70,8 +70,14 @@ const TimeShiftAuth = (() => {
   }
 
   function logout() {
-    localStorage.removeItem(SESSION_KEY);
-    window.location.href = "index.html";
+    try {
+      sessionStorage.clear();
+      [SESSION_KEY, "ts_user", "ts_role", "ts_name", "ts_cargo"].forEach((k) =>
+        localStorage.removeItem(k)
+      );
+    } catch (e) {}
+    const isSubdir = window.location.pathname.includes("/dashboard-v2/");
+    window.location.href = isSubdir ? "../index.html" : "index.html";
   }
 
   /**
