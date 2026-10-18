@@ -53,6 +53,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let employees = JSON.parse(localStorage.getItem('ts_employees')) || [];
     let myEmp = employees.find(e => e.email && e.email.toLowerCase().startsWith(tsUser.toLowerCase() + '@'));
 
+    const officialLabels = {
+        available: 'Disponible',
+        lunch: 'Lunch',
+        break: 'Break',
+        end: 'Salida'
+    };
+    const historicalLabels = {
+        court: 'En Tribunal',
+        meeting: 'Reunión con Cliente'
+    };
+    const stateHexColors = {
+        available: '#00A669',
+        lunch: '#64748B',
+        break: '#8B5CF6',
+        end: '#EF4444',
+        court: '#1D3B8B',
+        meeting: '#F59E0B'
+    };
+
     if (!myEmp) {
         const newId = employees.length > 0 ? Math.max(...employees.map(e => e.id || 0)) + 1 : 1;
         myEmp = {
@@ -69,19 +88,22 @@ document.addEventListener('DOMContentLoaded', () => {
         employees.push(myEmp);
         localStorage.setItem('ts_employees', JSON.stringify(employees));
     } else {
-        // Normalize active state on employee object to the 4 official client states
-        const officialLabels = {
-            available: 'Disponible',
-            lunch: 'Lunch',
-            break: 'Break',
-            end: 'Salida'
-        };
-        if (myEmp.state === 'Almuerzo') myEmp.colorId = 'lunch';
-        if (myEmp.state === 'Fin de Turno') myEmp.colorId = 'end';
-        if (!officialLabels[myEmp.colorId]) {
+        // Unificar únicamente nombres renombrados ('Almuerzo' -> 'Lunch', 'Fin de Turno' -> 'Salida')
+        // conservando estados heredados desconocidos o históricos sin convertirlos forzosamente a Disponible
+        if (myEmp.state === 'Almuerzo') {
+            myEmp.colorId = 'lunch';
+            myEmp.state = 'Lunch';
+        } else if (myEmp.state === 'Fin de Turno') {
+            myEmp.colorId = 'end';
+            myEmp.state = 'Salida';
+        } else if (officialLabels[myEmp.colorId]) {
+            myEmp.state = officialLabels[myEmp.colorId];
+        } else if (historicalLabels[myEmp.colorId] && !myEmp.state) {
+            myEmp.state = historicalLabels[myEmp.colorId];
+        } else if (!myEmp.colorId && !myEmp.state) {
             myEmp.colorId = 'available';
+            myEmp.state = 'Disponible';
         }
-        myEmp.state = officialLabels[myEmp.colorId];
     }
 
     const stateHeading = document.getElementById('current-state-heading');
@@ -121,12 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Seed initial daily history row if empty
     if (dailyHistory.length === 0) {
         const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const initColorMap = { available: '#00A669', lunch: '#64748B', break: '#8B5CF6', end: '#EF4444' };
         dailyHistory.push({
             time: nowStr,
             state: myEmp.state,
-            color: initColorMap[myEmp.colorId] || '#00A669',
-            duration: null
+            color: stateHexColors[myEmp.colorId] || '#00A669',
+            duration: myEmp.colorId === 'end' ? 'OFF' : null
         });
         localStorage.setItem(historyKey, JSON.stringify(dailyHistory));
     }
@@ -179,22 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (stateHeading) {
             stateHeading.textContent = `TIEMPO EN ESTADO ACTUAL (${stateLabel})`;
-            stateHeading.style.color = color;
+            stateHeading.style.color = color || stateHexColors[stateId] || '#64748B';
         }
-    }
-
-    function syncEmployeeToStorage(timeOverride) {
-        let currentEmps = JSON.parse(localStorage.getItem('ts_employees')) || [];
-        const empIndex = currentEmps.findIndex(e => e.id === myEmp.id || (e.email && e.email.toLowerCase().startsWith(tsUser.toLowerCase() + '@')));
-        if (timeOverride !== undefined) {
-            myEmp.time = timeOverride;
-        }
-        if (empIndex !== -1) {
-            currentEmps[empIndex] = { ...currentEmps[empIndex], ...myEmp };
-        } else {
-            currentEmps.push(myEmp);
-        }
-        localStorage.setItem('ts_employees', JSON.stringify(currentEmps));
     }
 
     function appendAuxLog(prevStateId, startDate, endDate) {
@@ -237,6 +244,140 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         localStorage.setItem('ts_aux_logs', JSON.stringify(auxLogs));
+    }
+
+    // Sincroniza cambios realizados externamente (ej. desde Gestión de Usuarios)
+    // preservando el inicio real del nuevo período sin sobrescribir el estado ni duplicar registros
+    function syncExternalChanges() {
+        let currentEmps = [];
+        try {
+            currentEmps = JSON.parse(localStorage.getItem('ts_employees')) || [];
+        } catch (e) {
+            return;
+        }
+        const storedEmp = currentEmps.find(
+            e => e && (e.id === myEmp.id || (e.email && e.email.toLowerCase().startsWith(tsUser.toLowerCase() + '@')))
+        );
+        if (!storedEmp) return;
+
+        let extColorId = storedEmp.colorId;
+        let extState = storedEmp.state;
+        if (extState === 'Almuerzo') { extColorId = 'lunch'; extState = 'Lunch'; }
+        else if (extState === 'Fin de Turno') { extColorId = 'end'; extState = 'Salida'; }
+        else if (officialLabels[extColorId]) { extState = officialLabels[extColorId]; }
+
+        const storedStartStr = localStorage.getItem(`ts_state_start_${tsUser}`);
+        const parsedStoredStart = storedStartStr ? new Date(storedStartStr) : null;
+        const hasValidStoredStart = parsedStoredStart && !isNaN(parsedStoredStart.getTime());
+
+        const stateChangedExternally = (extColorId && extColorId !== myEmp.colorId) || (extState && extState !== myEmp.state);
+        const startChangedExternally = hasValidStoredStart && parsedStoredStart.getTime() !== stateStartTime.getTime();
+
+        // Sincronizar metadatos del empleado si cambiaron en Gestión
+        if (storedEmp.name) myEmp.name = storedEmp.name;
+        if (storedEmp.role) myEmp.role = storedEmp.role;
+        if (storedEmp.department) myEmp.department = storedEmp.department;
+        if (storedEmp.shift) myEmp.shift = storedEmp.shift;
+
+        if (!stateChangedExternally && !startChangedExternally) {
+            return;
+        }
+
+        const prevStateId = myEmp.colorId;
+        const now = new Date();
+
+        if (stateChangedExternally) {
+            if (startChangedExternally) {
+                // Gestión de Usuarios ya cerró el período anterior en ts_aux_logs y fijó el nuevo ts_state_start_<user>
+                stateStartTime = parsedStoredStart;
+            } else {
+                // Cambio externo directo en ts_employees sin actualizar ts_state_start_<user>:
+                // cerrar período anterior sin duplicar y fijar nuevo inicio
+                appendAuxLog(prevStateId, stateStartTime, now);
+                stateStartTime = now;
+                localStorage.setItem(`ts_state_start_${tsUser}`, stateStartTime.toISOString());
+            }
+
+            if (prevStateId === 'end' && extColorId !== 'end') {
+                sessionStartTime = stateStartTime;
+                localStorage.setItem(sessionKey, sessionStartTime.toISOString());
+            }
+
+            myEmp.colorId = extColorId || myEmp.colorId;
+            myEmp.state = extState || myEmp.state;
+            myEmp.time = storedEmp.time || '00:00:00';
+
+            // Recargar historial diario actualizado por Gestión sin duplicar filas
+            try {
+                const storedHistory = JSON.parse(localStorage.getItem(historyKey));
+                if (Array.isArray(storedHistory) && storedHistory.length > 0) {
+                    dailyHistory = storedHistory;
+                }
+            } catch (e) {}
+
+            const lastEntry = dailyHistory[dailyHistory.length - 1];
+            if (!lastEntry || lastEntry.state !== myEmp.state) {
+                if (lastEntry && !lastEntry.duration) {
+                    lastEntry.duration = prevStateId === 'end' ? 'OFF' : formatTimeDiff(stateStartTime);
+                }
+                const startTimeLabel = stateStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                dailyHistory.push({
+                    time: startTimeLabel,
+                    state: myEmp.state,
+                    color: stateHexColors[myEmp.colorId] || '#00A669',
+                    duration: myEmp.colorId === 'end' ? 'OFF' : null
+                });
+                localStorage.setItem(historyKey, JSON.stringify(dailyHistory));
+            }
+
+            const matchingBtn = Array.from(auxButtons).find(b => b.dataset.stateId === myEmp.colorId);
+            const uiColor = matchingBtn ? matchingBtn.dataset.color : (stateHexColors[myEmp.colorId] || '#64748B');
+            updateStateUI(myEmp.colorId, myEmp.state, uiColor);
+            renderDailyHistory();
+        } else if (startChangedExternally) {
+            stateStartTime = parsedStoredStart;
+            try {
+                const storedHistory = JSON.parse(localStorage.getItem(historyKey));
+                if (Array.isArray(storedHistory) && storedHistory.length > 0) {
+                    dailyHistory = storedHistory;
+                    renderDailyHistory();
+                }
+            } catch (e) {}
+        }
+    }
+
+    function syncEmployeeToStorage(timeOverride, onlyTime = false) {
+        if (onlyTime) {
+            // Antes de escribir el tick de tiempo, sincronizar cualquier cambio externo para no sobrescribirlo
+            syncExternalChanges();
+        }
+
+        let currentEmps = [];
+        try {
+            currentEmps = JSON.parse(localStorage.getItem('ts_employees')) || [];
+        } catch (e) {
+            currentEmps = [];
+        }
+
+        const empIndex = currentEmps.findIndex(
+            e => e && (e.id === myEmp.id || (e.email && e.email.toLowerCase().startsWith(tsUser.toLowerCase() + '@')))
+        );
+
+        const nextTime = timeOverride !== undefined ? timeOverride : myEmp.time;
+        myEmp.time = nextTime;
+
+        if (empIndex !== -1) {
+            if (onlyTime) {
+                // Evitar escrituras redundantes o sobrescritura de campos editados en Gestión
+                if (currentEmps[empIndex].time === nextTime) return;
+                currentEmps[empIndex].time = nextTime;
+            } else {
+                currentEmps[empIndex] = { ...currentEmps[empIndex], ...myEmp };
+            }
+        } else {
+            currentEmps.push(myEmp);
+        }
+        localStorage.setItem('ts_employees', JSON.stringify(currentEmps));
     }
 
     function parseTimeToMinutes(str) {
@@ -301,6 +442,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function changeState(stateId, stateLabel, color) {
+        // Primero verificar si hubo un cambio externo reciente antes de procesar el clic
+        syncExternalChanges();
         if (myEmp.colorId === stateId) return;
 
         const now = new Date();
@@ -343,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(historyKey, JSON.stringify(dailyHistory));
 
         // 6. Sync to ts_employees and ts_punches
-        syncEmployeeToStorage('00:00:00');
+        syncEmployeeToStorage('00:00:00', false);
         syncPunchRecord(stateLabel, stateId);
 
         updateStateUI(stateId, stateLabel, color);
@@ -357,9 +500,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Escuchar eventos storage entre pestañas para reflejar cambios desde Gestión de inmediato
+    window.addEventListener('storage', (e) => {
+        if (!e || !e.key || e.key === 'ts_employees' || e.key === `ts_state_start_${tsUser}` || e.key === historyKey) {
+            syncExternalChanges();
+        }
+    });
+
     // Timer Logic
     function formatTimeDiff(start) {
-        const diff = Math.floor((new Date() - start) / 1000);
+        const diff = Math.max(0, Math.floor((new Date() - start) / 1000));
         const h = Math.floor(diff / 3600).toString().padStart(2, '0');
         const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
         const s = (diff % 60).toString().padStart(2, '0');
@@ -367,6 +517,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setInterval(() => {
+        // Primero sincronizar si Gestión modificó el estado mientras el Portal está abierto
+        syncExternalChanges();
+
         let timeStr = formatTimeDiff(stateStartTime);
         
         if (myEmp && myEmp.colorId === 'end') {
@@ -386,21 +539,23 @@ document.addEventListener('DOMContentLoaded', () => {
             historyDurDisplay.textContent = timeStr;
         }
         
-        // Background sync to localStorage for the Dashboard to read live!
+        // Background sync to localStorage for the Dashboard to read live (solo actualiza time sin sobrescribir estado externo)
         if (myEmp) {
             const timeToSync = (myEmp.colorId === 'end') ? '00:00:00' : timeStr;
-            syncEmployeeToStorage(timeToSync);
+            syncEmployeeToStorage(timeToSync, true);
         }
     }, 1000);
 
     // Initial sync and punch record
-    syncEmployeeToStorage();
+    syncEmployeeToStorage(undefined, false);
     syncPunchRecord(myEmp.state, myEmp.colorId);
 
     // Initial Render
     let activeBtn = Array.from(auxButtons).find(b => b.dataset.stateId === myEmp.colorId);
     if (activeBtn) {
         updateStateUI(myEmp.colorId, activeBtn.dataset.stateLabel, activeBtn.dataset.color);
+    } else {
+        updateStateUI(myEmp.colorId, myEmp.state, stateHexColors[myEmp.colorId] || '#64748B');
     }
     renderDailyHistory();
 });
