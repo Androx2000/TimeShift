@@ -23,6 +23,28 @@ function countEmployeesByState(employees, stateId) {
   ).length;
 }
 
+function filterEmployees(employees) {
+  const search = document
+    .getElementById("employee-search")
+    .value.trim().toLocaleLowerCase();
+
+  const selectedState = document
+    .getElementById("state-filter")
+    .value;
+
+  return employees.filter(employee => {
+    const name = String(employee.name ?? "")
+      .toLocaleLowerCase();
+
+    const matchesName = name.includes(search);
+
+    const matchesState =
+      selectedState === "all" ||
+      employee.colorId === selectedState;
+
+    return matchesName && matchesState;
+  });
+}
 
 function renderEmployeesTable(employees) {
   const tbody = document.getElementById(
@@ -111,30 +133,7 @@ function renderAuxChart(employees) {
   const counts = stateIds.map(stateId =>
     countEmployeesByState(employees, stateId)
   );
-
-  function filterEmployees(employees) {
-  const search = document
-    .getElementById("employee-search")
-    .value.trim().toLocaleLowerCase();
-
-  const selectedState = document
-    .getElementById("state-filter")
-    .value;
-
-  return employees.filter(employee => {
-    const name = String(employee.name ?? "")
-      .toLocaleLowerCase();
-
-    const matchesName = name.includes(search);
-
-    const matchesState =
-      selectedState === "all" ||
-      employee.colorId === selectedState;
-
-    return matchesName && matchesState;
-  });
-}
-
+  
 
   if (auxChart) {
     auxChart.data.datasets[0].data = counts;
