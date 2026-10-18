@@ -1,0 +1,299 @@
+/* ==========================================================================
+   TIMESHIFT ·
+   ========================================================================== */
+
+/* 1. Fondo con resplandor ambiental calido */
+body {
+  background-color: #EFE8DC;
+  background-image:
+    radial-gradient(ellipse 750px 600px at 50% 48%, rgba(212, 168, 86, 0.45) 0%, rgba(200, 155, 60, 0.22) 40%, rgba(200, 155, 60, 0.05) 72%, transparent 100%),
+    radial-gradient(circle 900px at 50% 50%, #F6F1E8 0%, #E8DFD0 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* 2. Compensación tipografica */
+.font-titular {
+  letter-spacing: -0.025em;
+}
+
+/* 3. Reloj analógico TimeShift (Vidrio translúcido y agujas) */
+.reloj-analogico {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: rgba(252, 248, 242, 0.65);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 2px 4px rgba(20, 32, 43, 0.03),
+    0 12px 28px -6px rgba(90, 68, 35, 0.22),
+    0 20px 40px -10px rgba(20, 32, 43, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 250ms ease;
+  user-select: none;
+}
+
+.reloj-analogico:hover {
+  transform: scale(1.03);
+  box-shadow:
+    0 3px 6px rgba(20, 32, 43, 0.04),
+    0 16px 36px -6px rgba(90, 68, 35, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.reloj-esfera {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Marcas horarias principales */
+.marca-reloj {
+  position: absolute;
+  background: rgba(20, 32, 43, 0.65);
+  border-radius: 1px;
+}
+
+.marca-12 { top: 6px; left: calc(50% - 1px); width: 2px; height: 6px; }
+.marca-6  { bottom: 6px; left: calc(50% - 1px); width: 2px; height: 6px; }
+.marca-3  { right: 6px; top: calc(50% - 1px); width: 6px; height: 2px; }
+.marca-9  { left: 6px; top: calc(50% - 1px); width: 6px; height: 2px; }
+
+/* Puntos horarios secundarios */
+.punto-reloj {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(20, 32, 43, 0.35);
+  border-radius: 50%;
+  left: calc(50% - 1px);
+  top: calc(50% - 1px);
+}
+
+.punto-1  { transform: rotate(30deg) translateY(-32px); }
+.punto-2  { transform: rotate(60deg) translateY(-32px); }
+.punto-4  { transform: rotate(120deg) translateY(-32px); }
+.punto-5  { transform: rotate(150deg) translateY(-32px); }
+.punto-7  { transform: rotate(210deg) translateY(-32px); }
+.punto-8  { transform: rotate(240deg) translateY(-32px); }
+.punto-10 { transform: rotate(300deg) translateY(-32px); }
+.punto-11 { transform: rotate(330deg) translateY(-32px); }
+
+/* Agujas */
+.aguja {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 999px;
+  will-change: transform;
+}
+
+.aguja-hora {
+  width: 2.5px;
+  height: 22px;
+  margin-top: -22px;
+  margin-left: -1.25px;
+  background: #14202B;
+  transform-origin: 50% 100%;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(20, 32, 43, 0.25);
+}
+
+.aguja-minuto {
+  width: 2px;
+  height: 30px;
+  margin-top: -30px;
+  margin-left: -1px;
+  background: #1D2D3B;
+  transform-origin: 50% 100%;
+  z-index: 3;
+  box-shadow: 0 1px 3px rgba(20, 32, 43, 0.25);
+}
+
+.aguja-segundo {
+  width: 1.2px;
+  height: 42px;
+  margin-top: -34px;
+  margin-left: -0.6px;
+  background: #C89B3C;
+  transform-origin: 50% 34px;
+  z-index: 4;
+  box-shadow: 0 1px 2px rgba(200, 155, 60, 0.4);
+}
+
+.reloj-eje {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  margin-top: -3.5px;
+  background: #C89B3C;
+  border: 1.5px solid #FFFFFF;
+  border-radius: 50%;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(20, 32, 43, 0.3);
+}
+
+/* 4. Tarjeta de cristal translúcido real */
+.tarjeta-apple {
+  background: rgba(252, 248, 242, 0.60);
+  backdrop-filter: blur(36px) saturate(195%);
+  -webkit-backdrop-filter: blur(36px) saturate(195%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 2px 4px rgba(20, 32, 43, 0.02),
+    0 20px 48px -10px rgba(90, 68, 35, 0.20),
+    0 40px 80px -15px rgba(20, 32, 43, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease;
+}
+
+/* 5. Selector Segmentado: cavidad y pastilla flotante */
+.control-segmentado {
+  position: relative;
+  display: flex;
+  background: rgba(40, 30, 15, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 1rem;
+  padding: 4px;
+  user-select: none;
+}
+
+.pildora-deslizante {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 0.8rem;
+  box-shadow:
+    0 4px 12px rgba(40, 30, 15, 0.14),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1), width 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.segmento-btn {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  color: #5C6B78;
+  border-radius: 0.8rem;
+  transition: color 200ms ease, transform 80ms ease;
+}
+
+.segmento-btn.activo {
+  color: #14202B;
+  font-weight: 600;
+}
+
+.segmento-btn:active {
+  transform: scale(0.97);
+}
+
+/* 6. Campos de Entrada Redondeados y translucidos */
+.campo-apple {
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(20, 32, 43, 0.10);
+  box-shadow: inset 0 1px 2px rgba(20, 32, 43, 0.03);
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.campo-apple:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(20, 32, 43, 0.22);
+}
+
+.campo-apple:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #C89B3C;
+  box-shadow:
+    0 0 0 3.5px rgba(200, 155, 60, 0.22),
+    0 1px 2px rgba(20, 32, 43, 0.05);
+}
+
+/* 7. Botón de Visibilidad de Contraseña */
+.btn-ojo {
+  transition: transform 120ms ease, color 150ms ease;
+}
+
+.btn-ojo:active {
+  transform: scale(0.88);
+}
+
+/* 8. boton Principal azul tinta profunda */
+.btn-principal {
+  background: #111C26;
+  box-shadow:
+    0 4px 10px rgba(17, 28, 38, 0.15),
+    0 12px 28px -4px rgba(17, 28, 38, 0.42);
+  transition: background-color 150ms ease, box-shadow 150ms ease, transform 60ms ease-out;
+}
+
+.btn-principal:hover {
+  background: #192734;
+  box-shadow:
+    0 6px 14px rgba(17, 28, 38, 0.20),
+    0 16px 32px -4px rgba(17, 28, 38, 0.48);
+}
+
+.btn-principal:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 4px rgba(17, 28, 38, 0.2);
+}
+
+/* 9. Alerta con Rebote Elástico */
+@keyframes apple-shake {
+  0%   { transform: translateX(0); opacity: 0; }
+  15%  { transform: translateX(-8px); opacity: 1; }
+  30%  { transform: translateX(7px); }
+  45%  { transform: translateX(-5px); }
+  60%  { transform: translateX(4px); }
+  75%  { transform: translateX(-2px); }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.alerta-apple-error {
+  animation: apple-shake 380ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  background: rgba(180, 85, 63, 0.10);
+  border: 1px solid rgba(180, 85, 63, 0.28);
+  color: #B4553F;
+}
+
+.alerta-apple-exito {
+  animation: apple-shake 300ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  background: rgba(63, 117, 88, 0.11);
+  border: 1px solid rgba(63, 117, 88, 0.30);
+  color: #2F6044;
+}
+
+/* 10. Accesibilidad y reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .pildora-deslizante,
+  .campo-apple,
+  .btn-principal,
+  .segmento-btn,
+  .alerta-apple-error,
+  .alerta-apple-exito,
+  .reloj-analogico {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
