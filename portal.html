@@ -9,7 +9,19 @@
     <script>
         (function() {
             try {
-                const user = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user');
+                let user = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user');
+                if (!user) {
+                    try {
+                        const s = JSON.parse(localStorage.getItem('timeshift_session'));
+                        if (s && s.username) {
+                            user = s.username;
+                            localStorage.setItem('ts_user', s.username);
+                            if (s.rol) localStorage.setItem('ts_role', s.rol);
+                            if (s.nombre) localStorage.setItem('ts_name', s.nombre);
+                            if (s.cargo) localStorage.setItem('ts_cargo', s.cargo);
+                        }
+                    } catch (e) {}
+                }
                 if (!user) {
                     try {
                         sessionStorage.removeItem('ts_user');

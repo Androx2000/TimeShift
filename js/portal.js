@@ -1,9 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // 1. Setup Auth & UI
-    const tsUser = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user');
-    const tsName = sessionStorage.getItem('ts_name') || localStorage.getItem('ts_name');
-    const tsCargo = sessionStorage.getItem('ts_cargo') || localStorage.getItem('ts_cargo');
+    let fallbackSession = null;
+    try {
+        fallbackSession = JSON.parse(localStorage.getItem('timeshift_session'));
+    } catch (e) {}
+    const tsUser = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user') || (fallbackSession && fallbackSession.username);
+    const tsName = sessionStorage.getItem('ts_name') || localStorage.getItem('ts_name') || (fallbackSession && fallbackSession.nombre);
+    const tsCargo = sessionStorage.getItem('ts_cargo') || localStorage.getItem('ts_cargo') || (fallbackSession && fallbackSession.cargo);
 
     if (!tsUser) {
         window.location.replace('index.html');
@@ -50,8 +54,17 @@ document.addEventListener('DOMContentLoaded', () => {
         'esantos': 'Operaciones'
     };
 
-    let employees = JSON.parse(localStorage.getItem('ts_employees')) || [];
-    let myEmp = employees.find(e => e.email && e.email.toLowerCase().startsWith(tsUser.toLowerCase() + '@'));
+    function safeReadArray(key) {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(key));
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    let employees = safeReadArray('ts_employees');
+    let myEmp = employees.find(e => e && e.email && e.email.toLowerCase().startsWith(tsUser.toLowerCase() + '@'));
 
     const officialLabels = {
         available: 'Disponible',
@@ -114,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Local daily history for the portal view
     const historyKey = `ts_daily_history_${tsUser}`;
-    let dailyHistory = JSON.parse(localStorage.getItem(historyKey)) || [];
+    let dailyHistory = safeReadArray(historyKey);
 
     let stateStartTime = new Date();
     const savedStartTime = localStorage.getItem(`ts_state_start_${tsUser}`);
@@ -435,8 +448,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const nowM = now.getMinutes().toString().padStart(2, '0');
         const nowTimeStr = `${nowH}:${nowM}`;
 
-        let punches = JSON.parse(localStorage.getItem('ts_punches')) || [];
-        let punch = punches.find(p => p.empId === myEmp.id && p.date === todayStr);
+        let punches = safeReadArray('ts_punches');
+        let punch = punches.find(p => p && p.empId === myEmp.id && p.date === todayStr);
 
         if (!punch) {
             const newPunchId = punches.length > 0 ? Math.max(...punches.map(p => p.id || 0)) + 1 : 1;
