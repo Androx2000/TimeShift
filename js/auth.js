@@ -28,14 +28,25 @@ const TimeShiftAuth = (() => {
 
   /** Crea el "seed" de usuarios en localStorage la primera vez que se ejecuta la app. */
   function initUsers() {
-    if (!localStorage.getItem(USERS_KEY)) {
+    try {
+      const raw = localStorage.getItem(USERS_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
+      }
+    } catch (e) {
       localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
     }
   }
 
   function getUsers() {
     initUsers();
-    return JSON.parse(localStorage.getItem(USERS_KEY));
+    try {
+      const parsed = JSON.parse(localStorage.getItem(USERS_KEY));
+      return Array.isArray(parsed) ? parsed : DEFAULT_USERS;
+    } catch (e) {
+      return DEFAULT_USERS;
+    }
   }
 
   /**
@@ -45,28 +56,65 @@ const TimeShiftAuth = (() => {
   function verifyCredentials(username, password) {
     const users = getUsers();
     const found = users.find(
-      (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
+      (u) => u && String(u.username || "").toLowerCase() === String(username || "").toLowerCase() && u.password === password
     );
     return found || null;
   }
 
-  /** Guarda la sesión activa simulada en localStorage. */
+  /** Guarda la sesión activa simulada en localStorage y sincroniza las claves legadas. */
   function createSession(user) {
     const session = {
       username: user.username,
-      nombre: user.nombre,
-      rol: user.rol,
-      cargo: user.cargo,
-      area: user.area,
+      nombre: user.nombre || user.name || user.username,
+      rol: user.rol || user.role || "empleado",
+      cargo: user.cargo || "Empleado",
+      area: user.area || "",
       loginTime: new Date().toISOString(),
     };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      localStorage.setItem("ts_user", session.username);
+      localStorage.setItem("ts_role", session.rol);
+      localStorage.setItem("ts_name", session.nombre);
+      localStorage.setItem("ts_cargo", session.cargo);
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.setItem("ts_user", session.username);
+        sessionStorage.setItem("ts_role", session.rol);
+        sessionStorage.setItem("ts_name", session.nombre);
+        sessionStorage.setItem("ts_cargo", session.cargo);
+      }
+    } catch (e) {}
     return session;
   }
 
   function getSession() {
-    const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && parsed.username && parsed.rol) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+
+    try {
+      const tsUser = (typeof sessionStorage !== "undefined" && sessionStorage.getItem("ts_user")) || localStorage.getItem("ts_user");
+      const tsRole = (typeof sessionStorage !== "undefined" && sessionStorage.getItem("ts_role")) || localStorage.getItem("ts_role");
+      if (tsUser && tsRole) {
+        const tsName = (typeof sessionStorage !== "undefined" && sessionStorage.getItem("ts_name")) || localStorage.getItem("ts_name") || tsUser;
+        const tsCargo = (typeof sessionStorage !== "undefined" && sessionStorage.getItem("ts_cargo")) || localStorage.getItem("ts_cargo") || "";
+        return {
+          username: tsUser,
+          nombre: tsName,
+          rol: tsRole,
+          cargo: tsCargo,
+          area: "",
+        };
+      }
+    } catch (e) {}
+
+    return null;
   }
 
   function logout() {

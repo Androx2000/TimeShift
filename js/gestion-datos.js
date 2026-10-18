@@ -9,8 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
     // --- 0. AUTH CHECK -----------------------------------------------------
-    const tsUser = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user');
-    const tsRole = sessionStorage.getItem('ts_role') || localStorage.getItem('ts_role');
+    let fallbackSession = null;
+    try {
+        fallbackSession = JSON.parse(localStorage.getItem('timeshift_session'));
+    } catch (_) {}
+    const tsUser = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user') || (fallbackSession && fallbackSession.username);
+    const tsRole = sessionStorage.getItem('ts_role') || localStorage.getItem('ts_role') || (fallbackSession && fallbackSession.rol);
     if (!tsUser || !tsRole || tsRole !== 'admin') {
         window.location.replace('index.html');
         return;

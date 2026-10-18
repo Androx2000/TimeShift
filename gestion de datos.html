@@ -8,8 +8,21 @@
     <script>
         (function() {
             try {
-                const user = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user');
-                const role = sessionStorage.getItem('ts_role') || localStorage.getItem('ts_role');
+                let user = sessionStorage.getItem('ts_user') || localStorage.getItem('ts_user');
+                let role = sessionStorage.getItem('ts_role') || localStorage.getItem('ts_role');
+                if (!user || !role) {
+                    try {
+                        const s = JSON.parse(localStorage.getItem('timeshift_session'));
+                        if (s && s.username && s.rol) {
+                            user = user || s.username;
+                            role = role || s.rol;
+                            localStorage.setItem('ts_user', user);
+                            localStorage.setItem('ts_role', role);
+                            if (s.nombre) localStorage.setItem('ts_name', s.nombre);
+                            if (s.cargo) localStorage.setItem('ts_cargo', s.cargo);
+                        }
+                    } catch (e) {}
+                }
                 if (!user || !role || role !== 'admin') {
                     try {
                         sessionStorage.removeItem('ts_user');
