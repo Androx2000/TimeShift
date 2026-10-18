@@ -1,15 +1,16 @@
 
 function isAdmin() {
- 
-const adminSession = (
-  typeof TimeShiftAuth !== "undefined"
-)
-  ? TimeShiftAuth.getSession()
-  : null;
+  if (typeof TimeShiftAuth === "undefined") {
+    return false;
+  }
 
-if (!adminSession || adminSession.rol !== "admin") {
-  window.location.replace("../index.html");
+  const session = TimeShiftAuth.getSession();
+
+  return session !== null && session.rol === "admin";
 }
+
+if (!isAdmin()) {
+  window.location.replace("../index.html");
 }
 
 
