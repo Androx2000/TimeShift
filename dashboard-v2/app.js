@@ -1,19 +1,31 @@
 
-const employees = [
-  { id: 1, name: "Ana", state: "available" },
-  { id: 2, name: "Carlos", state: "lunch" },
-  { id: 3, name: "María", state: "break" },
-  { id: 4, name: "José", state: "available" },
-  { id: 5, name: "Luis", state: "end" }
-];
+function getEmployees() {
+  try {
+    const saved = localStorage.getItem("ts_employees");
 
-function countEmployeesByState(state) {
+    if (!saved) {
+      return [];
+    }
+
+    const employees = JSON.parse(saved);
+
+    return Array.isArray(employees) ? employees : [];
+
+  } catch (error) {
+    console.error("Error al cargar empleados:", error);
+    return [];
+  }
+}
+
+function countEmployeesByState(employees, stateId) {
   return employees.filter(
-    employee => employee.state === state
+    employee => employee.colorId === stateId
   ).length;
 }
 
 function updateDashboard() {
+  const employees = getEmployees();
+
   const states = {
     available: "available-count",
     lunch: "lunch-count",
@@ -21,8 +33,12 @@ function updateDashboard() {
     end: "end-count"
   };
 
-  for (const [state, elementId] of Object.entries(states)) {
-    const count = countEmployeesByState(state);
+  for (const [stateId, elementId] of Object.entries(states)) {
+    const count = countEmployeesByState(
+      employees,
+      stateId
+    );
+
     const element = document.getElementById(elementId);
 
     if (element) {
