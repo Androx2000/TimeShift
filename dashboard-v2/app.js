@@ -89,9 +89,30 @@ function updateDashboard() {
       element.textContent = count;
     }
   }
-
   
-function filterEmployees(employees) {
+    const filteredEmployees = filterEmployees(employees);
+renderEmployeesTable(filteredEmployees);
+    renderAuxChart(employees);
+}
+
+
+let auxChart = null;
+
+function renderAuxChart(employees) {
+  const canvas = document.getElementById("auxChart");
+
+  if (!canvas || typeof Chart === "undefined") {
+    return;
+  }
+
+  const labels = ["Disponible", "Lunch", "Break", "Salida"];
+  const stateIds = ["available", "lunch", "break", "end"];
+
+  const counts = stateIds.map(stateId =>
+    countEmployeesByState(employees, stateId)
+  );
+
+  function filterEmployees(employees) {
   const search = document
     .getElementById("employee-search")
     .value.trim().toLocaleLowerCase();
@@ -114,28 +135,6 @@ function filterEmployees(employees) {
   });
 }
 
-
-    const filteredEmployees = filterEmployees(employees);
-renderEmployeesTable(filteredEmployees);
-    renderAuxChart(employees);
-}
-
-
-let auxChart = null;
-
-function renderAuxChart(employees) {
-  const canvas = document.getElementById("auxChart");
-
-  if (!canvas || typeof Chart === "undefined") {
-    return;
-  }
-
-  const labels = ["Disponible", "Lunch", "Break", "Salida"];
-  const stateIds = ["available", "lunch", "break", "end"];
-
-  const counts = stateIds.map(stateId =>
-    countEmployeesByState(employees, stateId)
-  );
 
   if (auxChart) {
     auxChart.data.datasets[0].data = counts;
