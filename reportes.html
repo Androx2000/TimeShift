@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TimeShift - Reportes AUX</title>
 <script>
-(function(){try{var u=sessionStorage.getItem('ts_user')||localStorage.getItem('ts_user');var r=sessionStorage.getItem('ts_role')||localStorage.getItem('ts_role');if(!u||r!=='admin'){window.location.replace('index.html');}}catch(e){window.location.replace('index.html');}})();
+(function(){try{var s=null;try{s=JSON.parse(localStorage.getItem('timeshift_session'));}catch(_){}var u=sessionStorage.getItem('ts_user')||localStorage.getItem('ts_user')||(s&&s.username);var r=sessionStorage.getItem('ts_role')||localStorage.getItem('ts_role')||(s&&s.rol);if(u&&r&&!localStorage.getItem('ts_user')){localStorage.setItem('ts_user',u);localStorage.setItem('ts_role',r);if(s&&s.nombre)localStorage.setItem('ts_name',s.nombre);if(s&&s.cargo)localStorage.setItem('ts_cargo',s.cargo);}if(!u||r!=='admin'){window.location.replace('index.html');}}catch(e){window.location.replace('index.html');}})();
 window.tsLogout=function(){try{sessionStorage.clear();['ts_user','ts_role','ts_name','ts_cargo','timeshift_session'].forEach(function(k){localStorage.removeItem(k)});}catch(e){}window.location.replace('index.html');};
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -225,8 +225,8 @@ function liveSegments(closedLogs){ // estado activo en curso de cada empleado (t
       if(!u || !st || !STATES[sid] || sid === 'end') return;
       const startDate = new Date(st);
       if (isNaN(startDate.getTime())) return;
-      const d = (now - startDate) / 36e5;
-      if (d <= 0 || d > 12) return;
+      const dSec = (now - startDate) / 1000;
+      if (dSec < 1 || dSec > 12 * 3600) return;
       // Evitar duplicar un período que ya fue cerrado en ts_aux_logs
       const startIso = startDate.toISOString();
       const alreadyClosed = Array.isArray(closedLogs) && closedLogs.some(
