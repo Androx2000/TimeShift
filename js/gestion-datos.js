@@ -48,6 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
         'Almuerzo': 'Lunch',
         'Fin de Turno': 'Salida'
     };
+    const historicalColorIdToState = {
+        court: 'En Tribunal',
+        meeting: 'Reunión con Cliente'
+    };
+    const historicalStateToColorId = {
+        'En Tribunal': 'court',
+        'Reunión con Cliente': 'meeting'
+    };
     const STATES = Object.keys(stateToColorId);
 
     const punchColors = {
@@ -91,17 +99,30 @@ document.addEventListener('DOMContentLoaded', () => {
     let employees = readList(LS_EMP);
     let punches = readList(LS_PUNCH);
 
-    // Reconstruye los selects de estado para que solo existan los 4 AUX del cliente
+    const STATE_SELECT_LABELS = {
+        'Disponible': 'Disponible (Activo)',
+        'Lunch': 'Lunch',
+        'Break': 'Break',
+        'Salida': 'Salida'
+    };
+
+    function renderActiveStateOptions(legacyInheritedState = null) {
+        const sel = $('input-state');
+        if (!sel) return;
+        const legacyOpt = (legacyInheritedState && !STATES.includes(legacyInheritedState))
+            ? `<option value="${esc(legacyInheritedState)}" disabled>${esc(legacyInheritedState)} (Histórico heredado)</option>`
+            : '';
+        sel.innerHTML = legacyOpt + STATES.map((s) => `<option value="${s}">${STATE_SELECT_LABELS[s] || s}</option>`).join('');
+    }
+
+    // Reconstruye los selects de estado para que solo existan los 4 AUX activos seleccionables
     (function syncStateSelects() {
-        const labels = { 'Disponible': 'Disponible (Activo)', 'Lunch': 'Lunch', 'Break': 'Break', 'Salida': 'Salida' };
-        const build = (id, withAll) => {
-            const sel = $(id);
-            if (!sel) return;
-            sel.innerHTML = (withAll ? '<option value="ALL">Todos</option>' : '')
-                + STATES.map((s) => `<option value="${s}">${labels[s] || s}</option>`).join('');
-        };
-        build('input-state', false);
-        build('filter-status', true);
+        renderActiveStateOptions(null);
+        const filterSel = $('filter-status');
+        if (filterSel) {
+            filterSel.innerHTML = '<option value="ALL">Todos</option>'
+                + STATES.map((s) => `<option value="${s}">${STATE_SELECT_LABELS[s] || s}</option>`).join('');
+        }
     })();
 
     // --- 2. SWEETALERT2 (con respaldo si el CDN no carga) ------------------
@@ -230,7 +251,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!DEPARTMENTS.includes(d.department)) e.department = 'Selecciona un departamento válido.';
         if (!SHIFTS.includes(d.shift)) e.shift = 'Selecciona un turno válido.';
-        if (!STATES.includes(d.state)) e.state = 'Selecciona un estado válido.';
+
+        // Solo se permite seleccionar uno de los 4 estados activos nuevos,
+        // o conservar sin cambios el estado histórico heredado que ya tenía el empleado al editar otros campos
+        const editingEmp = editingId !== null ? employees.find((x) => x.id === editingId) : null;
+        const isPreservedHistorical = Boolean(editingEmp && !STATES.includes(editingEmp.state) && d.state === editingEmp.state);
+        if (!STATES.includes(d.state) && !isPreservedHistorical) {
+            e.state = 'Selecciona un estado válido.';
+        }
 
         return e;
     }
@@ -274,23 +302,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentVal && employees.some((e) => String(e.id) === currentVal)) select.value = currentVal;
     }
 
+    // Normaliza únicamente etiquetas equivalentes ('Almuerzo' -> 'Lunch', 'Fin de Turno' -> 'Salida')
+    // y conserva intactos los estados heredados o históricos desconocidos sin convertirlos a Disponible
     function normalizeEmployeeState(emp) {
         if (!emp) return emp;
         if (legacyStateMap[emp.state]) emp.state = legacyStateMap[emp.state];
+
         if (emp.colorId && colorIdToState[emp.colorId]) {
             emp.state = colorIdToState[emp.colorId];
         } else if (stateToColorId[emp.state]) {
             emp.colorId = stateToColorId[emp.state];
-        } else {
+        } else if (emp.colorId && historicalColorIdToState[emp.colorId]) {
+            if (!emp.state) emp.state = historicalColorIdToState[emp.colorId];
+        } else if (historicalStateToColorId[emp.state]) {
+            if (!emp.colorId) emp.colorId = historicalStateToColorId[emp.state];
+        } else if (!emp.state && !emp.colorId) {
             emp.colorId = 'available';
             emp.state = 'Disponible';
+        } else {
+            // Conservar significado histórico del estado heredado sin sobrescribirlo a Disponible
+            if (!emp.state) emp.state = String(emp.colorId);
+            if (!emp.colorId) emp.colorId = String(emp.state).toLowerCase().replace(/\s+/g, '_');
         }
         return emp;
     }
 
     function recordManualAuxChange(emp, newColorId, newStateLabel) {
         const userKey = String(emp.email || '').split('@')[0].trim().toLowerCase() || `emp_${emp.id}`;
-        const prevStateId = emp.colorId || stateToColorId[emp.state] || 'available';
+        const prevStateId = emp.colorId || stateToColorId[emp.state] || historicalStateToColorId[emp.state] || 'available';
         if (prevStateId === newColorId) return;
 
         const now = new Date();
@@ -398,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         tbody.innerHTML = filtered.map((emp) => {
-            const style = stateColors[emp.colorId] || stateColors.available;
+            const style = stateColors[emp.colorId] || { border: 'border-slate-400', text: 'text-slate-600' };
             return `
             <tr class="hover:bg-[#F8FAFC] transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -464,17 +503,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openEmployeeModal(emp = null) {
         currentEditId = emp ? emp.id : null;
+        renderActiveStateOptions(emp ? emp.state : null);
         formAdd.reset();
         showErrors(EMP_FIELDS, {});
         if (emp) {
             normalizeEmployeeState(emp);
+            renderActiveStateOptions(emp.state);
             $('input-name').value = emp.name;
             $('input-email').value = emp.email;
             $('input-role').value = emp.role;
             $('input-department').value = emp.department;
             $('input-shift').value = emp.shift;
-            // Empleados antiguos con AUX ya eliminados (En Tribunal, Reunión) pasan a Disponible
-            $('input-state').value = STATES.includes(emp.state) ? emp.state : 'Disponible';
+            // Conservar el estado heredado actual (como opción deshabilitada no seleccionable para nuevos)
+            // para no alterarlo a Disponible si el admin solo edita otro campo
+            $('input-state').value = emp.state;
+        } else {
+            $('input-state').value = 'Disponible';
         }
         const title = addModal.querySelector('h3');
         const subtitle = title?.nextElementSibling;
@@ -491,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function editEmployee(id) {
-        employees = readList(LS_EMP);
+        employees = readList(LS_EMP).map(normalizeEmployeeState);
         const emp = employees.find((e) => e.id === id);
         if (!emp) {
             alertMessage('error', 'Empleado no encontrado', 'Es posible que ya haya sido eliminado.');
@@ -510,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.entries(EMP_FIELDS).forEach(([key, inputId]) => {
         const el = $(inputId);
         const handler = () => {
-            employees = readList(LS_EMP);
+            employees = readList(LS_EMP).map(normalizeEmployeeState);
             showErrors(EMP_FIELDS, validateEmployee(readEmployeeForm(), currentEditId), key);
         };
         el.addEventListener('input', handler);
@@ -531,8 +575,6 @@ document.addEventListener('DOMContentLoaded', () => {
             notify('error', 'Revisa los campos marcados en rojo');
             return;
         }
-
-        const colorId = stateToColorId[data.state] || 'available';
 
         if (currentEditId !== null) {
             const emp = employees.find((x) => x.id === currentEditId);
@@ -556,6 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!ok) return;
 
+            const colorId = stateToColorId[data.state] || (emp.state === data.state ? emp.colorId : 'available');
             const stateChanged = emp.colorId !== colorId || emp.state !== data.state;
             if (stateChanged) {
                 recordManualAuxChange(emp, colorId, data.state);
@@ -569,6 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentHistoryEmpId === emp.id) viewHistory(emp.id, false);
             notify('success', 'Empleado actualizado con éxito');
         } else {
+            const colorId = stateToColorId[data.state] || 'available';
             const newId = employees.length ? Math.max(...employees.map((x) => Number(x.id) || 0)) + 1 : 1;
             const userKey = String(data.email || '').split('@')[0].trim().toLowerCase() || `emp_${newId}`;
             localStorage.setItem(`ts_state_start_${userKey}`, new Date().toISOString());
