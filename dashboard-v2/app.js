@@ -1,18 +1,15 @@
 
 function isAdmin() {
-  const user =
-    sessionStorage.getItem("ts_user") ||
-    localStorage.getItem("ts_user");
+ 
+const adminSession = (
+  typeof TimeShiftAuth !== "undefined"
+)
+  ? TimeShiftAuth.getSession()
+  : null;
 
-  const role =
-    sessionStorage.getItem("ts_role") ||
-    localStorage.getItem("ts_role");
-
-  return Boolean(user) && role === "admin";
-}
-
-if (!isAdmin()) {
+if (!adminSession || adminSession.rol !== "admin") {
   window.location.replace("../index.html");
+}
 }
 
 
