@@ -227,7 +227,7 @@ https://github.com/Androx2000/TimeShift
 
 ### Video demostrativo
 
-[Ver video de demostración](PEGAR_AQUI_ENLACE_DEL_VIDEO)
+[Ver video de demostración](https://youtu.be/gmw5lPUFUnE)
 
 El video presenta las principales funcionalidades desarrolladas, incluyendo Dashboard, Gestión de Empleados, Portal AUX y Reportes.
 
