@@ -37,10 +37,9 @@ export function verifyCredentials(username, password) {
 export function createSession(user) {
   const session = {
     username: user.username,
-    nombre: user.nombre,
-    rol: user.rol,
+    nombre: user.name,
+    rol: user.role,
     cargo: user.cargo,
-    area: user.area,
     loginTime: new Date().toISOString(),
   };
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -50,7 +49,7 @@ export function createSession(user) {
 export function getSession() {
   try {
     const session = JSON.parse(localStorage.getItem(SESSION_KEY));
-    return session && session.username && session.rol ? session : null;
+    return session && session.username && session.role ? session : null;
   } catch {
     return null;
   }
@@ -61,6 +60,6 @@ export function logout() {
 }
 
 // En React las vistas son rutas, no archivos .html.
-export function routeForRole(rol) {
-  return rol === 'admin' ? '/dashboard' : '/portal';
+export function routeForRole(role) {
+  return role === 'admin' ? '/dashboard' : '/portal';
 }
