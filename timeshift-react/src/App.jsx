@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import Portal from './pages/Portal';
+import Portal from './pages/Portal.jsx';
 import Reportes from './pages/Reportes';
 import GestionDatos from './pages/GestionDatos';
 
