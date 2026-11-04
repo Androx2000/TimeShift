@@ -25,7 +25,7 @@ export default function Login() {
 
     // El rol lo decide la cuenta, no el usuario.
     createSession(cuenta);
-    navigate(routeForRole(cuenta.rol));
+    navigate(routeForRole(cuenta.role));
   }
 
   return (
