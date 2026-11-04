@@ -37,8 +37,8 @@ export function verifyCredentials(username, password) {
 export function createSession(user) {
   const session = {
     username: user.username,
-    nombre: user.name,
-    rol: user.role,
+    name: user.name,
+    role: user.role,
     cargo: user.cargo,
     loginTime: new Date().toISOString(),
   };
