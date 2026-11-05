@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+
+    --color-primary: #1E3A8A;
+    --color-primary-hover: #1E3A8A;
+    --color-background:#F3F4F6 ;
+    --color-text: #374151 ;
+    --color-text-muted: #6B7280 ;
+
+    --color-available: #00a680; 
+    --color-Lunch: #1D3A89;
+    --color-Break: #F49E0A ;
+    --color-End: #950e0e ;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+
+body{
+
+    background: var(--color-background);
+    color: var(--color-text);
+}
+
