@@ -1,9 +1,43 @@
+import { useState } from 'react';
+import { STATES } from '../constants/states';
+
 export default function Portal() {
+  const [current, setCurrent] = useState(STATES[0]);
+
+  function changeState(next) {
+    if (next.id === current.id) {
+      return;
+    }
+    setCurrent(next);
+  }
+
   return (
-    <section>
-      <h1>Portal</h1>
-      <p>Pendiente de migrar desde portal-v2/index.html</p>
-      <p className="bg-available text-white font-mono p-4">Tailwind test 00:00:00</p>
-    </section>
+    <div className="max-w-5xl mx-auto p-4 sm:p-8">
+      <h2 className="text-sm sm:text-base font-bold text-text-muted mb-4">
+        Selecciona tu Estado de Trabajo (Código AUX)
+      </h2>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {STATES.map((state) => (
+          <button
+            key={state.id}
+            type="button"
+            onClick={() => changeState(state)}
+            aria-pressed={state.id === current.id}
+            className={`${state.bg} text-white font-bold rounded-2xl h-16 shadow-sm transition
+                          hover:-translate-y-0.5 hover:brightness-105 active:scale-95`}
+          >
+            {state.label}
+          </button>
+        ))}
+      </div>
+
+      <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 mt-6 text-center">
+        <p className="text-sm font-bold text-primary uppercase tracking-wider">
+          {current.label}
+        </p>
+        <div className="font-mono text-6xl sm:text-7xl font-bold my-2">00:00:00</div>
+      </section>
+    </div>
   );
 }
