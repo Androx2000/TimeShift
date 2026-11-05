@@ -2,8 +2,8 @@
 
 @theme {
 
-    --color-primary: ##1E40AF;
-    --color-primary-hover: #1E3A8A;
+    --color-primary: #1E3A8A;
+    --color-primary-hover: #1E40AF;
     --color-background: #F4F6F9 ;
     --color-text: #111827 ;
     --color-text-muted: #475569 ;
