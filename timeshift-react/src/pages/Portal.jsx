@@ -18,23 +18,27 @@ export default function Portal() {
       </h2>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {STATES.map((state) => (
-          <button
-            key={state.id}
-            type="button"
-            onClick={() => changeState(state)}
-            aria-pressed={state.id === current.id}
-            className={`${state.bg} text-white font-bold rounded-2xl h-16 shadow-sm transition
-                          hover:-translate-y-0.5 hover:brightness-105 active:scale-95`}
-          >
-            {state.label}
-          </button>
-        ))}
+        {STATES.map((state) => {
+          const isActive = state.id === current.id;
+          return (
+            <button
+              key={state.id}
+              type="button"
+              onClick={() => changeState(state)}
+              aria-pressed={isActive}
+              className={`${state.bg} text-white font-bold rounded-2xl h-16 shadow-sm transition
+                            hover:-translate-y-0.5 hover:brightness-105 active:scale-95
+                            ${isActive ? 'ring-4 ring-primary/30 -translate-y-0.5' : ''}`}
+            >
+              {state.label}
+            </button>
+          );
+        })}
       </div>
 
       <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 mt-6 text-center">
         <p className="text-sm font-bold text-primary uppercase tracking-wider">
-          {current.label}
+          Tiempo en estado actual ({current.label})
         </p>
         <div className="font-mono text-6xl sm:text-7xl font-bold my-2">00:00:00</div>
       </section>
