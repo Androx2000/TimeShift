@@ -2,16 +2,15 @@
 
 @theme {
 
-    --color-primary: #1E3A8A;
+    --color-primary: ##1E40AF;
     --color-primary-hover: #1E3A8A;
-    --color-background:#F3F4F6 ;
-    --color-text: #374151 ;
-    --color-text-muted: #6B7280 ;
-
-    --color-available: #00a680; 
-    --color-Lunch: #1D3A89;
-    --color-Break: #F49E0A ;
-    --color-End: #950e0e ;
+    --color-background: #F4F6F9 ;
+    --color-text: #111827 ;
+    --color-text-muted: #475569 ;
+    --color-available: #00A669; 
+    --color-lunch: #64748B;
+    --color-break: #8B5CF6 ;
+    --color-end: #EF4444 ;
 
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
