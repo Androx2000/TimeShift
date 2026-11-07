@@ -1,18 +1,23 @@
 import { useState, useEffect } from 'react';
 import { STATES } from '../constants/states';
 import { formatDuration } from '../utils/time';
+import { getSession } from '../services/auth';
+import { loadStatus, saveStatus } from '../services/status';
 
 export default function Portal() {
-  const [current, setCurrent] = useState(STATES[0]);
+  const username = getSession().username;
 
-  const [startedAt, setStartedAt] = useState(() => Date.now());
+  const [saved] = useState(() => loadStatus(username));
+  const [current, setCurrent] = useState(
+    () => STATES.find((state) => state.id === saved?.stateId) ?? STATES[0]
+  );
+  const [startedAt, setStartedAt] = useState(() => saved?.startedAt ?? Date.now());
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     const intervalId = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(intervalId);
   }, []);
-
 
   function changeState(next, timestamp) {
     if (next.id === current.id) {
@@ -21,6 +26,7 @@ export default function Portal() {
     setCurrent(next);
     setStartedAt(timestamp);
     setNow(timestamp);
+    saveStatus(username, next.id, timestamp);
   }
 
   const elapsed = current.id === 'end' ? '--:--:--' : formatDuration(now - startedAt);
