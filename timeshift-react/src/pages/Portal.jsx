@@ -1,15 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { STATES } from '../constants/states';
+import { formatDuration } from '../utils/time';
 
 export default function Portal() {
   const [current, setCurrent] = useState(STATES[0]);
 
-  function changeState(next) {
+  const [startedAt, setStartedAt] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const intervalId = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+
+  function changeState(next, timestamp) {
     if (next.id === current.id) {
       return;
     }
     setCurrent(next);
+    setStartedAt(timestamp);
+    setNow(timestamp);
   }
+
+  const elapsed = current.id === 'end' ? '--:--:--' : formatDuration(now - startedAt);
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-8">
@@ -24,7 +38,7 @@ export default function Portal() {
             <button
               key={state.id}
               type="button"
-              onClick={() => changeState(state)}
+              onClick={() => changeState(state, Date.now())}
               aria-pressed={isActive}
               className={`${state.bg} text-white font-bold rounded-2xl h-16 shadow-sm transition
                             hover:-translate-y-0.5 hover:brightness-105 active:scale-95
@@ -40,7 +54,7 @@ export default function Portal() {
         <p className="text-sm font-bold text-primary uppercase tracking-wider">
           Tiempo en estado actual ({current.label})
         </p>
-        <div className="font-mono text-6xl sm:text-7xl font-bold my-2">00:00:00</div>
+        <div className="font-mono text-6xl sm:text-7xl font-bold my-2">{elapsed}</div>
       </section>
     </div>
   );
