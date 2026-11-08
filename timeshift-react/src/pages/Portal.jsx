@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { STATES } from '../constants/states';
+import { STATES, findState } from '../constants/states';
+import Card from '../components/Card';
+import StateBadge from '../components/StateBadge';
 import { formatDuration } from '../utils/time';
 import { getSession } from '../services/auth';
 import { loadStatus, saveStatus, loadHistory, saveHistory, dayOf } from '../services/status';
@@ -118,9 +120,8 @@ export default function Portal() {
                 return (
                   <tr key={entry.startedAt}>
                     <td className="px-4 py-3 font-mono">{formatClock(entry.startedAt)}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-block w-2.5 h-2.5 rounded-full mr-2 ${state.bg}`} />
-                      <span className={`font-semibold ${state.text}`}>{state.label}</span>
+                    <td className="px-4 py-3">                        
+                      <td className="px-4 py-3"><StateBadge stateId={entry.stateId} /></td>
                     </td>
                     <td className="px-4 py-3 text-right font-mono">{entryDuration(entry)}</td>
                   </tr>
