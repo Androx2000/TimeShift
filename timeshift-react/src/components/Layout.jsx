@@ -22,18 +22,32 @@ export default function Layout() {
   }
 
   return (
-    <div>
-      <header>
-        <strong>TimeShift</strong>
-        <nav>
+    <div className="min-h-screen bg-background">
+      <header className="flex flex-wrap items-center gap-x-8 gap-y-2 bg-primary px-6 py-3 text-white shadow">
+        <strong className="text-lg tracking-tight">TimeShift</strong>
+        <nav className="flex flex-1 gap-1">
           {MENU[session.role].map((item) => (
-            <NavLink key={item.to} to={item.to}>
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive ? 'bg-white/20 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'
+                }`
+              }
+            >
               {item.texto}
             </NavLink>
           ))}
         </nav>
-        <span>{session.name} · {session.cargo}</span>
-        <button type="button" onClick={cerrarSesion}>Cerrar sesión</button>
+        <span className="text-sm text-white/80">{session.name} · {session.cargo}</span>
+        <button
+          type="button"
+          onClick={cerrarSesion}
+          className="rounded-lg border border-white/40 px-3 py-1.5 text-sm font-medium hover:bg-white/10"
+        >
+          Cerrar sesión
+        </button>
       </header>
 
       <main>
