@@ -178,10 +178,16 @@
 
                 <div class="h-4 w-px bg-slate-200 hidden lg:block"></div>
 
-                <!-- Weather Pill -->
-                <div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50/80 border border-amber-200/50 text-xs font-semibold text-slate-700">
-                    <span class="text-amber-500 text-sm">☀️</span>
-                    <span>25°C</span>
+                <!-- Weather Pill (API Externa Open-Meteo) -->
+                <div id="live-weather-pill" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50/80 border border-amber-200/50 text-xs font-semibold text-slate-700" title="Clima San Salvador (API Open-Meteo)">
+                    <span id="live-weather-icon" class="text-amber-500 text-sm">⛅</span>
+                    <span id="live-weather-temp">Cargando...</span>
+                </div>
+
+                <!-- API Time Sync Indicator -->
+                <div id="api-sync-indicator" class="hidden xl:flex items-center gap-1.5 text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200" title="Sincronización con servidor horario oficial">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="api-sync-text">Hora SV (API)</span>
                 </div>
 
                 <!-- User Profile & Quick Actions -->
@@ -322,7 +328,8 @@
         &copy; 2026 TimeShift. Sistema de Control de Asistencia y Gestión de Turnos.
     </footer>
 
-    <!-- Core Portal Logic Script -->
+    <!-- Módulo de APIs Externas y Core Portal Logic -->
+    <script src="js/api-externa.js"></script>
     <script src="js/portal.js"></script>
 </body>
 </html>

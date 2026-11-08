@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,31 +9,68 @@
 
   <link rel="stylesheet" href="style.css">
   <script src="../js/auth.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js" defer></script>
-<script src="app.js" defer></script>
-
-  
+  <script src="../js/api-externa.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js" defer></script>
+  <script src="app.js" defer></script>
 </head>
 
 <body>
-
-  
-
   <main class="dashboard">
     <header>
       <h1>TimeShift</h1>
       <p>Panel de monitoreo de empleados</p>
       
-<nav class="dashboard-nav">
-  <a href="../gestion de datos.html">
-    Gestión de empleados
-  </a>
-
-  <a href="../reportes.html">
-    Reportes
-  </a>
-</nav>
+      <nav class="dashboard-nav">
+        <a href="../gestion de datos.html">
+          Gestión de empleados
+        </a>
+        <a href="../reportes.html">
+          Reportes
+        </a>
+        <a href="../portal.html">
+          Ir a Mi Portal
+        </a>
+        <a href="../index.html" onclick="if(window.TimeShiftAuth) TimeShiftAuth.logout();">
+          Cerrar Sesión
+        </a>
+      </nav>
     </header>
+
+    <!-- Sección de Integración de APIs Externas (DAW901) -->
+    <section class="api-services-bar" aria-label="Servicios Externos Sincronizados">
+      <div class="api-service-card">
+        <div class="api-icon">⏱️</div>
+        <div class="api-info">
+          <span class="api-label">Hora Oficial El Salvador</span>
+          <p id="api-official-time" class="api-value">Sincronizando...</p>
+          <span id="api-time-status" class="api-badge">API: TimeAPI (GMT-6)</span>
+        </div>
+      </div>
+
+      <div class="api-service-card">
+        <div class="api-icon" id="api-weather-icon">⛅</div>
+        <div class="api-info">
+          <span class="api-label">Clima San Salvador (Diligencias)</span>
+          <p id="api-weather-value" class="api-value">Cargando...</p>
+          <span id="api-weather-status" class="api-badge">API: Open-Meteo</span>
+        </div>
+      </div>
+
+      <div class="api-service-card">
+        <div class="api-icon">📅</div>
+        <div class="api-info">
+          <span class="api-label">Próximo Asueto Oficial</span>
+          <p id="api-holiday-value" class="api-value">Consultando...</p>
+          <span id="api-holiday-status" class="api-badge">API: Nager.Date SV</span>
+        </div>
+      </div>
+
+      <div class="api-action-box">
+        <button type="button" id="btn-refresh-api" class="api-refresh-btn" title="Actualizar datos desde APIs externas">
+          ↻ Actualizar APIs
+        </button>
+      </div>
+    </section>
 
     <section class="stats">
       <article class="card">
@@ -59,54 +95,47 @@
     </section>
 
     <section class="chart-section">
-  <h2>Distribución de empleados por estado AUX</h2>
+      <h2>Distribución de empleados por estado AUX</h2>
 
-  <div class="chart-container">
-    <canvas id="auxChart"></canvas>
-  </div>
-</section>
+      <div class="chart-container">
+        <canvas id="auxChart"></canvas>
+      </div>
+    </section>
     
-<section class="employees-section">
-  <h2>Monitoreo de empleados</h2>  
+    <section class="employees-section">
+      <h2>Monitoreo de empleados</h2>  
 
-  
-<div class="filters">
-  <input
-    type="search"
-    id="employee-search"
-    placeholder="Buscar empleado..."
-    aria-label="Buscar empleado por nombre"
-  >
+      <div class="filters">
+        <input
+          type="search"
+          id="employee-search"
+          placeholder="Buscar empleado..."
+          aria-label="Buscar empleado por nombre"
+        >
 
-  <select id="state-filter" aria-label="Filtrar por estado AUX">
-    <option value="all">Todos los estados</option>
-    <option value="available">Disponible</option>
-    <option value="lunch">Lunch</option>
-    <option value="break">Break</option>
-    <option value="end">Salida</option>
-  </select>
-</div>
+        <select id="state-filter" aria-label="Filtrar por estado AUX">
+          <option value="all">Todos los estados</option>
+          <option value="available">Disponible</option>
+          <option value="lunch">Lunch</option>
+          <option value="break">Break</option>
+          <option value="end">Salida</option>
+        </select>
+      </div>
 
-
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Empleado</th>
-          <th>Estado AUX</th>
-          <th>Tiempo en estado</th>
-        </tr>
-      </thead>
-
-      
-
-      <tbody id="employees-table-body">
-      </tbody>
-    </table>
-  </div>  
-</section>
-
-
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Empleado (DiceBear API)</th>
+              <th>Estado AUX</th>
+              <th>Tiempo en estado</th>
+            </tr>
+          </thead>
+          <tbody id="employees-table-body">
+          </tbody>
+        </table>
+      </div>  
+    </section>
   </main>
 </body>
 </html>

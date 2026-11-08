@@ -161,3 +161,134 @@ tbody tr:last-child td {
 .dashboard-nav a:hover {
   text-decoration: underline;
 }
+
+
+/* ==========================================================================
+   Servicios Externos (APIs) - Estilos para Dashboard-v2 (DAW901)
+   ========================================================================== */
+.api-services-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
+  gap: 16px;
+  margin-bottom: 24px;
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  align-items: center;
+}
+
+.api-service-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 12px;
+  border-right: 1px solid #e2e8f0;
+}
+
+.api-service-card:last-of-type {
+  border-right: none;
+}
+
+.api-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.api-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.api-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.03em;
+}
+
+.api-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin: 2px 0;
+  font-family: monospace, sans-serif;
+}
+
+.api-badge {
+  font-size: 10px;
+  color: #059669;
+  font-weight: 600;
+}
+
+.api-refresh-btn {
+  background: #1e3a8a;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.api-refresh-btn:hover {
+  background: #172554;
+  transform: translateY(-1px);
+}
+
+.api-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.emp-cell-flex {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.emp-avatar-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e2e8f0;
+  border: 2px solid #cbd5e1;
+}
+
+.emp-info-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.emp-name-text {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.emp-role-text {
+  font-size: 11px;
+  color: #64748b;
+}
+
+@media (max-width: 900px) {
+  .api-services-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+  .api-service-card {
+    border-right: none;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+}
+
+@media (max-width: 600px) {
+  .api-services-bar {
+    grid-template-columns: 1fr;
+  }
+}

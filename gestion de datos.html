@@ -224,6 +224,10 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <button id="btn-fetch-random-employee" type="button" class="bouncy-btn bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto" title="Consumir RandomUser API para importar empleado de prueba">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-6"/><path d="M12 3v12"/><path d="M8 7l4 -4l4 4"/></svg>
+                    Importar desde API Externa
+                </button>
                 <button id="btn-open-add-modal" class="bouncy-btn bg-primary hover:bg-[#e04c00] text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user-plus w-4 h-4" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" /><path d="M16 19h6" /><path d="M19 16v6" /><path d="M6 21v-2a4 4 0 0 1 4 -4h4" /></svg>
                     + Registrar Nuevo Empleado
@@ -636,8 +640,9 @@
         <span id="toast-message" class="text-xs sm:text-sm font-medium">Operación realizada con éxito</span>
     </div>
 
-    <!-- Script de Gestión de Datos -->
-       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Script de Gestión de Datos y APIs Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/api-externa.js"></script>
     <script src="js/gestion-datos.js"></script>
 </body>
 </html>

@@ -111,6 +111,16 @@ Ofrece:
 
 Los reportes utilizan los registros almacenados en el sistema y no requieren generar datos ficticios automáticamente.
 
+### 3.6. Consumo e integración de APIs externas
+
+Se incorporó el consumo asíncrono de APIs REST mediante `fetch()` y `async/await`:
+
+- **TimeAPI / WorldTimeAPI**: Validación y sincronización de hora oficial de El Salvador (GMT-6) para control estricto de puntualidad en marcaciones.
+- **Open-Meteo API**: Consulta en tiempo real de temperatura y condiciones climáticas en San Salvador para la planificación de diligencias de abogados litigantes y mensajería/notificaciones.
+- **Nager.Date API**: Detección automática del próximo asueto o día feriado nacional de El Salvador.
+- **RandomUser API**: Importación asistida de perfiles reales de empleados desde el módulo de Gestión de Datos.
+- **DiceBear API**: Generación dinámica de avatares SVG basados en semillas (seed), con mecanismo de fallback autónomo ante pérdida de conexión.
+
 ## 4. Tecnologías utilizadas
 
 | Tecnología | Aplicación en TimeShift |
@@ -124,6 +134,7 @@ Los reportes utilizan los registros almacenados en el sistema y no requieren gen
 | SheetJS | Exportaciones Excel |
 | jsPDF | Generación de documentos PDF |
 | jsPDF-AutoTable | Tablas dentro de documentos PDF |
+| APIs Externas (REST) | TimeAPI (hora oficial SV), Open-Meteo (clima SV), Nager.Date (asuetos SV), RandomUser (importación), DiceBear (avatares) |
 | localStorage | Almacenamiento de datos del prototipo |
 | Git y GitHub | Control de versiones y colaboración |
 

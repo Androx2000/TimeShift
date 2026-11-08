@@ -13,6 +13,7 @@ window.tsLogout=function(){try{sessionStorage.clear();['ts_user','ts_role','ts_n
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="js/api-externa.js"></script>
 <script>
 tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['IBM Plex Mono','monospace']},colors:{primary:"#FF5701",success:"#16A34A",warning:"#D97706",danger:"#DC2626",textDark:"#111827",brandBlue:"#1e3a8a"}}}}
 </script>
@@ -445,7 +446,11 @@ function buildPDF(m){
 document.addEventListener('DOMContentLoaded',()=>{
   const n=sessionStorage.getItem('ts_name')||localStorage.getItem('ts_name')||'Administrador', c=sessionStorage.getItem('ts_cargo')||localStorage.getItem('ts_cargo')||'Administrador';
   $('hdr-badge').textContent=n; $('hdr-name').textContent=n; $('hdr-cargo').textContent=c;
-  $('hdr-avatar').src=`https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(n)}&backgroundColor=1e293b`;
+  const avatarEl = $('hdr-avatar');
+  if (avatarEl) {
+    avatarEl.src = (typeof TimeShiftAPI !== 'undefined') ? TimeShiftAPI.getAvatarUrl(n, '1e293b') : `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(n)}&backgroundColor=1e293b`;
+    avatarEl.onerror = function() { if (typeof TimeShiftAPI !== 'undefined') TimeShiftAPI.handleAvatarError(this, n, '#1e3a8a'); };
+  }
   load(); initFilters();
   window.addEventListener('storage',e=>{ if(e.key&&/^ts_(aux_logs|employees|state_start)/.test(e.key)){ load(); fillFilters(); apply(); } });
   ['f-from','f-to','f-emp','f-cargo','f-state','f-min'].forEach(id=>{$(id).addEventListener('input',apply);$(id).addEventListener('change',apply);});
