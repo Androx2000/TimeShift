@@ -50,6 +50,7 @@ export default function Portal() {
     saveHistory(username, dayOf(timestamp), updated);
   }
 
+  const todayLabel = new Date(now).toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long' });
   const elapsed = current.id === 'end' ? '--:--:--' : formatDuration(now - startedAt);
 
   function entryDuration(entry) {
@@ -92,7 +93,9 @@ export default function Portal() {
 
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base sm:text-lg font-bold">Historial de Hoy</h3>
+                   <h3 className="text-base sm:text-lg font-bold">
+            Historial de hoy <span className="font-normal text-text-muted">· {todayLabel}</span>
+          </h3>
           <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-text-muted">
             {history.length} registros
           </span>
