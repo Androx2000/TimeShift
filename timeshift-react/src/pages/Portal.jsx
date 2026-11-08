@@ -8,7 +8,7 @@ export default function Portal() {
 
   const findState = (id) => STATES.find((state) => state.id === id) ?? STATES[0];
   const formatClock = (timestamp) =>
-  new Date(timestamp).toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit' });
+    new Date(timestamp).toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit' });
   const username = getSession().username;
 
   const [saved] = useState(() => loadStatus(username));
@@ -17,13 +17,14 @@ export default function Portal() {
   );
   const [startedAt, setStartedAt] = useState(() => saved?.startedAt ?? Date.now());
   const [now, setNow] = useState(() => Date.now());
+  const [history, setHistory] = useState(() => loadHistory(username, dayOf(Date.now())));
 
   useEffect(() => {
     const intervalId = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(intervalId);
   }, []);
 
-    function changeState(next, timestamp) {
+  function changeState(next, timestamp) {
     if (next.id === current.id) {
       return;
     }
@@ -52,7 +53,7 @@ export default function Portal() {
 
   const elapsed = current.id === 'end' ? '--:--:--' : formatDuration(now - startedAt);
 
-    function entryDuration(entry) {
+  function entryDuration(entry) {
     if (entry.endedAt !== null) {
       return formatDuration(entry.endedAt - entry.startedAt);
     }
@@ -83,7 +84,6 @@ export default function Portal() {
           );
         })}
       </div>
-
       <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 mt-6 text-center">
         <p className="text-sm font-bold text-primary uppercase tracking-wider">
           Tiempo en estado actual ({current.label})
@@ -91,7 +91,7 @@ export default function Portal() {
         <div className="font-mono text-6xl sm:text-7xl font-bold my-2">{elapsed}</div>
       </section>
 
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 mt-6">
+      <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 mt-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base sm:text-lg font-bold">Historial de Hoy</h3>
           <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-text-muted">
@@ -130,7 +130,6 @@ export default function Portal() {
           </table>
         )}
       </section>
-      
     </div>
   );
 }
