@@ -6,12 +6,14 @@ import { formatDuration } from '../utils/time';
 import { getSession } from '../services/auth';
 import { loadStatus, saveStatus, loadHistory, saveHistory, dayOf } from '../services/status';
 
-export default function Portal() {
 
-  const findState = (id) => STATES.find((state) => state.id === id) ?? STATES[0];
   const formatClock = (timestamp) =>
     new Date(timestamp).toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit' });
   const username = getSession().username;
+
+export default function Portal() {
+
+
 
   const [saved] = useState(() => loadStatus(username));
   const [current, setCurrent] = useState(
@@ -63,8 +65,8 @@ export default function Portal() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-8">
-      <h2 className="text-sm sm:text-base font-bold text-text-muted mb-4">
+     <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-6">
+            <h2 className="text-sm sm:text-base font-bold text-text-muted">
         Selecciona tu Estado de Trabajo (Código AUX)
       </h2>
 
@@ -86,14 +88,14 @@ export default function Portal() {
           );
         })}
       </div>
-      <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 mt-6 text-center">
+      <Card className="text-center sm:p-8">
         <p className="text-sm font-bold text-primary uppercase tracking-wider">
           Tiempo en estado actual ({current.label})
         </p>
         <div className="font-mono text-6xl sm:text-7xl font-bold my-2">{elapsed}</div>
-      </section>
+      </Card>
 
-      <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 mt-6">
+      <Card>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base sm:text-lg font-bold">Historial de Hoy</h3>
           <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-text-muted">
@@ -116,7 +118,7 @@ export default function Portal() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {[...history].reverse().map((entry) => {
-                const state = findState(entry.stateId);
+                
                 return (
                   <tr key={entry.startedAt}>
                     <td className="px-4 py-3 font-mono">{formatClock(entry.startedAt)}</td>
@@ -130,7 +132,7 @@ export default function Portal() {
             </tbody>
           </table>
         )}
-      </section>
+      </Card>
     </div>
   );
 }
