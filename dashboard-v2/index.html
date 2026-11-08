@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>TimeShift | Dashboard</title>
+
+  <link rel="stylesheet" href="style.css">
+  <script src="../js/auth.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js" defer></script>
+<script src="app.js" defer></script>
+
+  
+</head>
+
+<body>
+
+  
+
+  <main class="dashboard">
+    <header>
+      <h1>TimeShift</h1>
+      <p>Panel de monitoreo de empleados</p>
+      
+<nav class="dashboard-nav">
+  <a href="../gestion de datos.html">
+    Gestión de empleados
+  </a>
+
+  <a href="../reportes.html">
+    Reportes
+  </a>
+</nav>
+    </header>
+
+    <section class="stats">
+      <article class="card">
+        <h2>Disponible</h2>
+        <p id="available-count">0</p>
+      </article>
+
+      <article class="card">
+        <h2>Lunch</h2>
+        <p id="lunch-count">0</p>
+      </article>
+
+      <article class="card">
+        <h2>Break</h2>
+        <p id="break-count">0</p>
+      </article>
+
+      <article class="card">
+        <h2>Salida</h2>
+        <p id="end-count">0</p>
+      </article>
+    </section>
+
+    <section class="chart-section">
+  <h2>Distribución de empleados por estado AUX</h2>
+
+  <div class="chart-container">
+    <canvas id="auxChart"></canvas>
+  </div>
+</section>
+    
+<section class="employees-section">
+  <h2>Monitoreo de empleados</h2>  
+
+  
+<div class="filters">
+  <input
+    type="search"
+    id="employee-search"
+    placeholder="Buscar empleado..."
+    aria-label="Buscar empleado por nombre"
+  >
+
+  <select id="state-filter" aria-label="Filtrar por estado AUX">
+    <option value="all">Todos los estados</option>
+    <option value="available">Disponible</option>
+    <option value="lunch">Lunch</option>
+    <option value="break">Break</option>
+    <option value="end">Salida</option>
+  </select>
+</div>
+
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Empleado</th>
+          <th>Estado AUX</th>
+          <th>Tiempo en estado</th>
+        </tr>
+      </thead>
+
+      
+
+      <tbody id="employees-table-body">
+      </tbody>
+    </table>
+  </div>  
+</section>
+
+
+  </main>
+</body>
+</html>

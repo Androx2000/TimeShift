@@ -1,245 +1,277 @@
-# Sistema de Control de Asistencia y Gestión de Turnos (TimeShift)
+# TimeShift
+## Sistema Web de Control de Asistencia y Gestión de Turnos
 
-## ETAPA 2: DESARROLLO BASE DEL PROYECTO
+**Universidad Don Bosco — Desarrollo de Aplicaciones Web con Software Interpretado en el Cliente (DAW901)**
 
-### Integrantes del Proyecto:
-- **Boris Armando Campos López** - `CL253217`
-- **Diego Humberto Márquez Valencia** - `MV262624`
-- **Marcos Abdulio López Alvarado** - `LA211485`
-- **Alan Enrique Ventura Hernández** - `VH262707`
+**Etapa 3 — Avance 1: Interactividad y Componentes Dinámicos**
 
----
+### Integrantes del proyecto
 
-## 1. Descripción General del Sistema
-
-**TimeShift** es una solución web para la gestión de asistencia, turnos y monitoreo operativo en tiempo real de colaboradores y personal judicial/administrativo.
-
-El sistema permite a los administradores:
-1. Supervisar en vivo el estado y permanencia de cada empleado (En Tribunal, Disponible, Reunión con Cliente, Almuerzo/Descanso, Fin de Turno).
-2. Analizar tendencias de cumplimiento, puntualidad y métricas de rendimiento con gráficos analíticos.
-3. Administrar el catálogo de empleados (altas y bajas de personal de forma interactiva).
-4. Consultar el historial detallado de marcaciones de un empleado específico con etiquetas semánticas de color según su estado de asistencia (Puntual, Tardanza, Ausencia Justificada, Falta Injustificada y Salida Anticipada).
-5. Ajustar reglas globales de turnos, límites de inactividad y códigos de estado auxiliar (AUX).
+- Boris Armando Campos López — CL253217
+- Diego Humberto Márquez Valencia — MV262624
+- Marcos Abdulio López Alvarado — LA211485
+- Alan Enrique Ventura Hernández — VH262707
 
 ---
 
-## 2. Estructura de Archivos del Proyecto
+## 1. Descripción general
+
+**TimeShift** es una aplicación web diseñada para mejorar el control de asistencia, la administración de empleados y el monitoreo de estados laborales AUX.
+
+El proyecto está orientado a la **Oficina Jurídica Jovita Alvarado**, con el propósito de facilitar el seguimiento de las jornadas y proporcionar información para la toma de decisiones administrativas.
+
+El sistema permite consultar el estado actual de los empleados, administrar sus registros, visualizar estadísticas y generar informes descargables.
+
+Para este avance se implementaron funcionalidades interactivas mediante JavaScript y librerías especializadas en visualización, validación y generación de reportes.
+
+## 2. Objetivos
+
+### Objetivo general
+
+Desarrollar un sistema web interactivo que permita gestionar empleados, monitorear estados AUX y generar reportes de asistencia mediante tecnologías de desarrollo web del lado del cliente.
+
+### Objetivos específicos
+
+- Implementar indicadores y gráficas dinámicas.
+- Registrar los cambios de estados AUX y calcular sus duraciones.
+- Incorporar validaciones avanzadas y notificaciones interactivas.
+- Facilitar la administración de empleados.
+- Generar reportes descargables en CSV, Excel y PDF.
+- Implementar navegación y acceso diferenciado según el rol del usuario.
+
+## 3. Funcionalidades implementadas
+
+### 3.1. Autenticación y roles
+
+El sistema dispone de dos roles principales:
+
+**Administrador:** puede acceder al dashboard, gestionar empleados y consultar reportes.
+
+**Empleado:** puede acceder al portal personal y registrar cambios de estado AUX.
+
+La autenticación es simulada mediante JavaScript y almacenamiento local. Esta solución corresponde a un prototipo académico y no debe considerarse un mecanismo de seguridad para producción.
+
+### 3.2. Dashboard administrativo
+
+Ubicación: `dashboard-v2/index.html`
+
+Permite:
+
+- Visualizar los cuatro estados AUX.
+- Consultar indicadores del personal.
+- Mostrar gráficas dinámicas con Chart.js.
+- Buscar empleados por nombre.
+- Filtrar empleados por estado AUX.
+- Actualizar la información al detectar cambios en el almacenamiento local.
+- Visualizar una interfaz adaptable a diferentes tamaños de pantalla.
+
+### 3.3. Portal del empleado
+
+Ubicación: `portal.html`
+
+Permite seleccionar los siguientes estados:
+
+| Estado AUX | Descripción |
+|---|---|
+| Disponible | Empleado disponible durante su jornada |
+| Lunch | Tiempo destinado al almuerzo |
+| Break | Período de descanso |
+| Salida | Finalización de la jornada |
+
+El sistema registra los períodos de actividad, incluyendo sus horas de inicio, finalización y duración.
+
+### 3.4. Gestión de empleados
+
+Ubicación: `gestion de datos.html`
+
+Incluye:
+
+- Registro de empleados.
+- Edición de información.
+- Eliminación de empleados.
+- Validación de campos obligatorios.
+- Validación de correos electrónicos.
+- Comprobación de registros duplicados.
+- Confirmaciones y notificaciones mediante SweetAlert2.
+- Consulta y administración de información de asistencia.
+
+### 3.5. Módulo de reportes
+
+Ubicación: `reportes.html`
+
+Ofrece:
+
+- Consulta del historial AUX.
+- Estadísticas de duración de estados.
+- Gráficas con Chart.js.
+- Filtros por empleado, estado, cargo y fechas.
+- Exportación de registros en formato CSV.
+- Exportación a Excel mediante SheetJS.
+- Generación de documentos PDF mediante jsPDF y jsPDF-AutoTable.
+
+Los reportes utilizan los registros almacenados en el sistema y no requieren generar datos ficticios automáticamente.
+
+## 4. Tecnologías utilizadas
+
+| Tecnología | Aplicación en TimeShift |
+|---|---|
+| HTML5 | Estructura de las páginas |
+| CSS3 | Presentación y estilos |
+| JavaScript | Lógica e interactividad |
+| Tailwind CSS | Diseño de interfaces en módulos existentes |
+| Chart.js | Gráficas e indicadores |
+| SweetAlert2 | Alertas y confirmaciones |
+| SheetJS | Exportaciones Excel |
+| jsPDF | Generación de documentos PDF |
+| jsPDF-AutoTable | Tablas dentro de documentos PDF |
+| localStorage | Almacenamiento de datos del prototipo |
+| Git y GitHub | Control de versiones y colaboración |
+
+## 5. Estructura del proyecto
 
 ```text
-TimeShift-feat-dashboard-admin/
+TimeShift/
 │
-├── index.html                 # Punto de entrada inicial (redirección a dashboard.html)
-├── dashboard.html             # Panel principal de administración y monitoreo en vivo
-├── gestion de datos.html      # Módulo para altas/bajas de personal e historial de marcaciones
-├── README.md                  # Manual técnico y explicativo del proyecto
+├── index.html
+├── dashboard.html
+├── portal.html
+├── gestion de datos.html
+├── reportes.html
+├── README.md
 │
-└── js/
-    ├── dashboard.js           # Lógica interactiva del panel de control (gráficos, vistas, tooltips)
-    ├── gestion-datos.js       # Lógica de gestión de empleados, altas/bajas, historial y localStorage
-    └── app.js                 # Scripts base auxiliares
+├── dashboard-v2/
+│   ├── index.html
+│   ├── app.js
+│   └── style.css
+│
+├── CSS/
+│   └── estilos.css
+│
+├── js/
+│   ├── app.js
+│   ├── auth.js
+│   ├── dashboard.js
+│   ├── gestion-datos.js
+│   ├── login.js
+│   └── portal.js
+│
+└── docs/
+    └── TimeShift_Foro1_Investigacion.pdf
 ```
 
----
+**Nota:** La carpeta `docs/` corresponde al documento académico que debe incorporarse al repositorio. `dashboard.html` y `js/dashboard.js` se conservan como parte de la implementación anterior; el dashboard administrativo utilizado en este avance se encuentra en `dashboard-v2/`.
 
-## 3. Explicación Detallada del Código: `dashboard.html` y `js/dashboard.js`
+## 6. Instrucciones de ejecución
 
-El archivo `dashboard.html` es el núcleo de visualización del administrador. Utiliza **Tailwind CSS (CDN)** para maquetación rápida y responsiva, **Chart.js** para visualización de datos y la API de **DiceBear** para avatares pixelados generados dinámicamente.
+### Requisitos
 
-A continuación se desglosa cada componente y cómo opera:
+- Navegador web actualizado.
+- Visual Studio Code (recomendado).
+- Extensión Live Server o servidor HTTP local.
+- Conexión a Internet para cargar las librerías CDN.
 
-### 3.1. Configuración de Tailwind y Tipografía (`<head>`)
-- Se importa la fuente Google Sans e IBM Plex Mono para el diseño numérico e institucional.
-- Se extiende el tema de Tailwind mediante `tailwind.config` para definir colores del sistema:
-  - `primary: "#FF5701"`: Color de acento naranja TimeShift.
-  - `brandBlue: "#1e3a8a"`: Azul marino institucional.
-  - `success: "#16A34A"`: Verde para estados activos y cumplimientos.
-  - `warning: "#D97706"`: Ámbar para reuniones y avisos.
-  - `danger: "#DC2626"`: Rojo para fin de turno y faltas.
-- Se configuran clases utilitarias personalizadas para los botones toggle (`.toggle-checkbox:checked`).
+### Procedimiento
 
-### 3.2. Encabezado Responsivo y Menú Superior (`<header>`)
-- **Diseño**: Fondo `#111827` (slate oscuro), `sticky top-0` con `z-50` para mantenerse fijo al hacer scroll.
-- **Identidad de Marca**: Título "TimeShift" junto a la etiqueta visual `Admin`.
-- **Navegación Dinámica (`#main-nav`)**:
-  - Enlaces con atributo `data-target="view-monitor"`, `data-target="view-reports"`, etc.
-  - Enlace directo con indicador pulsante a la página de **Gestión de Datos** (`gestion de datos.html`).
-- **Avatar de Usuario**: Imagen de perfil obtenida dinámicamente mediante DiceBear:
-  ```html
-  <img src="https://api.dicebear.com/10.x/pixelbot/svg?seed=Juan+Pablo&backgroundColor=1e293b">
-  ```
+1. Clonar el repositorio:
 
-### 3.3. Sistema de Cambio de Vistas en JavaScript (`switchView`)
-En `js/dashboard.js`, la función `switchView(targetId)` maneja la navegación por pestañas de forma fluida y sin recargar la página:
-```javascript
-function switchView(targetId) {
-    // 1. Resalta el enlace activo en blanco y atenúa los demás a gris (text-slate-400)
-    navLinks.forEach(link => {
-        if (link.dataset.target === targetId) {
-            link.classList.remove('text-slate-400');
-            link.classList.add('text-white');
-        } else {
-            link.classList.add('text-slate-400');
-            link.classList.remove('text-white');
-        }
-    });
-
-    // 2. Oculta todas las secciones (.view-section) con la clase 'hidden'
-    //    y muestra únicamente la sección cuyo id coincide con targetId ('block')
-    viewSections.forEach(section => {
-        if (section.id === targetId) {
-            section.classList.remove('hidden');
-            section.classList.add('block');
-        } else {
-            section.classList.add('hidden');
-            section.classList.remove('block');
-        }
-    });
-}
+```bash
+git clone https://github.com/Androx2000/TimeShift.git
 ```
 
-### 3.4. Vista 1: Monitor en Tiempo Real (`#view-monitor`)
-1. **Tarjetas KPI Superiores**:
-   - **Personal Activo** (24): Color verde (`text-success`).
-   - **Fuera de la Oficina** (8): Color ámbar (`text-warning`).
-   - **Ausente** (3): Color rojo (`text-danger`).
-2. **Tabla de Empleados en Vivo (`#employee-table-body`)**:
-   - Cada fila muestra: Foto, Nombre, Correo, Departamento, Etiqueta de Estado y Tiempo en Estado (con tipografía monospace).
-   - Los datos se sincronizan con `localStorage` (`timeshift_employees_data`); si no existen, toma la lista predeterminada.
-3. **Gráfica de Dona (`#timeDistributionChart`) y Tooltip Flotante Personalizado**:
-   - Emplea un gráfico tipo `doughnut` de Chart.js con un corte central del 75% (`cutout: '75%'`) que muestra un contador en medio.
-   - **Técnica Especial: `externalTooltipHandler`**: Los tooltips nativos de canvas suelen quedar recortados por los bordes del contenedor. TimeShift implementa un tooltip en HTML puro insertado directamente en el `document.body` con posición absoluta y `z-[9999]`:
-     ```javascript
-     const isRightHalf = tooltip.caretX > (chart.width / 2);
-     if (isRightHalf) {
-         tooltipEl.style.transform = 'translate(15px, -50%)';
-     } else {
-         tooltipEl.style.transform = 'translate(calc(-100% - 15px), -50%)';
-     }
-     ```
-     Esto garantiza que el tooltip se posicione inteligentemente fuera de la dona sin tapar la información.
+2. Abrir la carpeta `TimeShift` en Visual Studio Code.
 
-### 3.5. Vista 2: Reportes y Analíticas (`#view-reports`)
-1. **Filtro Temporal y Exportación**: Botones con iconos SVG para exportar a **PDF** y **XLSX**.
-2. **Tarjetas de Cumplimiento**:
-   - Tasa Promedio de Cumplimiento: `94.2% (+1.4%)`.
-   - Horas Productivas: `1,842h (+5.2%)`.
-   - Incidentes de Incumplimiento: `18 (-12%)`.
-   - Duración Promedio Turno AUX: `48m`.
-3. **Gráfico de Barras (`adherenceBarChart`)**:
-   - Muestra el porcentaje de adherencia diaria de lunes a domingo.
-   - Eje Y formateado con el símbolo de porcentaje (`%`).
-4. **Desglose de Estados AUX**:
-   - Barras de progreso con porcentajes de distribución de tiempo (En Tribunal 45%, Disponible 30%, Reunión con Cliente 15%, Almuerzo 10%).
-5. **Tabla de Desviaciones de Horario (`#adherence-table-body`)**:
-   - Compara el estado programado contra el real (ej. *Programado: Disponible* vs *Real: En Tribunal (Atrasado)*) e indica la desviación en minutos (`+35 min`).
+3. Abrir `index.html` mediante Live Server.
 
-### 3.6. Vista 3: Directorio de Personal (`#view-directory`)
-- Permite buscar empleados y filtrar por departamento o estado.
-- El botón **`+ Agregar Empleado`** redirige a `gestion de datos.html?action=new` abriendo directamente el modal de registro.
-- En la tabla de empleados, el enlace **`Ver Registros`** redirige a `gestion de datos.html?empId=[ID]` para cargar el historial de ese colaborador.
+4. Iniciar sesión utilizando una cuenta de demostración configurada en el proyecto.
 
-### 3.7. Vista 4: Configuración (`#view-settings`)
-- **Reglas Globales**: Objetivo de turno por defecto (`08:00:00`), minutos de inactividad (`15`), alertas de desviación y cierre de sesión forzado.
-- **Gestor de Estados AUX**: Lista de estados activables/desactivables mediante interruptores personalizados estilo iOS.
+5. Acceder a las funcionalidades correspondientes al rol del usuario.
 
----
+No es necesario ejecutar `npm install` para esta versión, ya que utiliza HTML, CSS y JavaScript con librerías cargadas mediante CDN.
 
-## 4. Explicación de la Página `gestion de datos.html` y `js/gestion-datos.js`
+## 7. Almacenamiento y funcionamiento
 
-Esta página amplía las capacidades operativas del sistema, permitiendo administrar el catálogo del personal y auditar las marcaciones individuales.
+El prototipo utiliza `localStorage` para almacenar información como:
 
-### 4.1. Módulo para Agregar y Quitar Gente
+- `ts_employees`: empleados registrados y sus estados actuales.
+- `ts_aux_logs`: historial de períodos AUX finalizados.
+- `ts_punches`: registros de marcaciones.
+- `timeshift_session`: información de sesión simulada.
 
-#### A) Agregar Nuevo Empleado (`openAddModal` y `formAdd`)
-1. El usuario hace clic en el botón principal **`+ Registrar Nuevo Empleado`**.
-2. Se abre un modal con validación que solicita:
-   - Nombre completo.
-   - Correo electrónico corporativo.
-   - Cargo o puesto asignado.
-   - Departamento (Operaciones, Asesoría Legal, Personal Ejecutivo, Estrategia, Administración, Tecnología).
-   - Turno asignado (Diurno 08:00-17:00, Matutino, etc.).
-   - Estado inicial del empleado.
-3. Al enviar el formulario:
-   - El sistema genera un identificador único en formato correlativo (`TS-007`, `TS-008`...).
-   - Asigna un avatar DiceBear a partir del nombre ingresado.
-   - Agrega el empleado al arreglo en memoria y lo guarda en `localStorage` (`timeshift_employees_data`).
-   - Inicializa automáticamente un registro de marcación de bienvenida para el nuevo colaborador.
-   - Actualiza los contadores KPI (Total de personal, activos, departamentos) y emite un toast de notificación.
+Las distintas páginas del mismo origen y perfil de navegador pueden consultar estos datos.
 
-#### B) Quitar / Eliminar Empleado (`openDeleteModal` y `btnConfirmDelete`)
-1. En la fila de cada empleado existe el botón **`Eliminar`**.
-2. Al presionarlo, se despliega un modal de confirmación con alerta visual y un resumen de los datos del empleado (Nombre, ID, Departamento, Cargo).
-3. Si el usuario confirma la baja:
-   - El registro se remueve de `localStorage`.
-   - Se actualizan las tablas y los contadores en tiempo real.
-   - Si el empleado eliminado estaba cargado en el historial de marcaciones, el sistema conmuta automáticamente al siguiente disponible.
-   - Se muestra un toast confirmando la eliminación segura.
+**Limitación:** esta versión no permite sincronización en tiempo real entre computadoras independientes. La integración de una base de datos centralizada se contempla como una mejora futura.
 
-#### C) Búsqueda y Filtros en Tiempo Real
-- El campo de texto filtra de manera instantánea por nombre, cargo, correo o ID (`TS-XXX`).
-- Selectores dinámicos para filtrar simultáneamente por **Departamento** y **Estado de Turno**.
+## 8. Pruebas y validaciones
 
----
+Durante el desarrollo se realizaron comprobaciones relacionadas con:
 
-### 4.2. Tabla de Historial de Marcaciones de Empleado Específico
+- Inicio y cierre de sesión.
+- Acceso según roles.
+- Registro y modificación de empleados.
+- Validaciones de formularios.
+- Cambios de estados AUX.
+- Persistencia de registros.
+- Actualización de indicadores y gráficas.
+- Filtros de reportes.
+- Exportaciones CSV, Excel y PDF.
 
-Al seleccionar un empleado (mediante el selector desplegable, haciendo clic en **"Ver Marcaciones"** en la tabla de personal, o viniendo desde `dashboard.html`), se carga la vista de detalle:
+La validación final automatizada reportó 31 casos de prueba aprobados, sin fallos registrados. Estos resultados corresponden a las pruebas realizadas sobre el prototipo y no constituyen una certificación de seguridad de producción.
 
-#### A) Ficha de Perfil del Colaborador
-Muestra:
-- Avatar DiceBear a gran tamaño con marco corporativo.
-- Nombre completo, identificador único `TS-XXX` y etiqueta de estado en vivo.
-- Cargo, departamento, correo corporativo y horario asignado.
-- **Tarjetas de Estadísticas Individuales**:
-  1. **Días Registrados**: Número total de marcaciones registradas.
-  2. **Tasa de Puntualidad**: Porcentaje de días en que llegó puntual vs retrasos/faltas.
-  3. **Retrasos**: Cantidad de llegadas tardías en el período.
-  4. **Minutos Acumulados de Retraso**: Total de tiempo a justificar o recuperar.
+## 9. Entregables — Etapa 3, Foro 1
 
-#### B) Tabla de Marcaciones e Indicadores
-Columnas de la tabla:
-1. **Fecha**: Formato día/mes/año con indicador luminoso.
-2. **Hora de Entrada**: Hora exacta en formato `HH:mm:ss`.
-3. **Pausas / AUX**: Tiempo consumido en almuerzo o salidas auxiliares.
-4. **Hora de Salida**: Hora de fin de jornada o estado *"En turno"*.
-5. **Horas Efectivas**: Tiempo neto trabajado con tipografía monospace (`8h 15m`).
-6. **Estado de Asistencia**: Etiqueta semántica de color (badge).
-7. **Observaciones / Justificaciones**: Notas de auditoría, permisos o motivos de retraso.
+### Código fuente
 
-#### C) Sistema y Guía de Etiquetas de Color (Badges)
-Para una rápida lectura visual, cada marcación cuenta con estilos CSS definidos:
+Repositorio GitHub:
 
-| Estado | Color Principal | Clases CSS / Estilo | Significado Operativo |
-| :--- | :--- | :--- | :--- |
-| **Puntual** | 🟢 Verde Esmeralda | `bg-emerald-50 text-emerald-700 border-emerald-500` | Ingreso dentro del horario programado o tolerancia. |
-| **Tardanza** | 🟡 Ámbar / Naranja | `bg-amber-50 text-amber-700 border-amber-500` | Llegada con retraso superior a 5 min. Muestra los minutos acumulados `(+Xm)`. |
-| **Ausencia Justificada**| 🔵 Azul Institucional | `bg-blue-50 text-blue-700 border-blue-600` | Permiso de trabajo, cita médica o comisión con constancia RH. |
-| **Falta Injustificada** | 🔴 Rojo Peligro | `bg-red-50 text-red-700 border-red-600` | Inasistencia no comunicada ni autorizada. |
-| **Salida Anticipada** | 🟠 Naranja Alerta | `bg-orange-50 text-orange-700 border-orange-500` | Retiro antes de la culminación de la jornada oficial. |
+https://github.com/Androx2000/TimeShift
 
-#### D) Registro de Marcación Manual
-Incluye un modal que permite al administrador registrar manualmente una asistencia extraordinaria, ajustando fecha, horas de entrada/salida, estado y la justificación correspondiente.
+### Video demostrativo
+
+[Ver video de demostración](https://youtu.be/gmw5lPUFUnE)
+
+El video presenta las principales funcionalidades desarrolladas, incluyendo Dashboard, Gestión de Empleados, Portal AUX y Reportes.
+
+### Documento de investigación
+
+[Descargar investigación de librerías JavaScript — PDF](docs/TimeShift Foro1.pdf)
+
+El documento desarrolla el análisis de las librerías utilizadas en el proyecto, sus características, justificación técnica, aplicaciones prácticas y referencias bibliográficas en formato APA 7.ª edición.
+
+## 10. Trabajo colaborativo
+
+El proyecto se desarrolló utilizando Git y GitHub como herramientas de control de versiones.
+
+Se utilizaron ramas para organizar las funcionalidades:
+
+- `feature/dashboard`
+- `feature/portal-aux`
+- `feature/gestion-usuarios`
+- `feature/reportes`
+
+Posteriormente, los módulos fueron integrados y sometidos a pruebas en ramas de integración y control de calidad antes de incorporarse a `main`.
+
+El historial de commits y Pull Requests del repositorio permite consultar la evolución del proyecto.
+
+## 11. Limitaciones y mejoras futuras
+
+Entre las principales mejoras previstas se encuentran:
+
+1. Migración hacia React y componentes reutilizables.
+2. Integración de una API externa según los requisitos de las siguientes etapas.
+3. Implementación de una base de datos centralizada.
+4. Autenticación segura y autorización del lado del servidor.
+5. Sincronización real entre dispositivos.
+6. Mejoras de rendimiento y accesibilidad.
+7. Despliegue en una plataforma de hosting.
+
+## 12. Conclusiones
+
+TimeShift incorpora herramientas interactivas que permiten automatizar tareas administrativas relacionadas con la asistencia y los estados laborales.
+
+Chart.js facilita la interpretación de información mediante visualizaciones; SweetAlert2 mejora la retroalimentación de las acciones del usuario; y SheetJS y jsPDF permiten exportar información en formatos útiles para la administración.
+
+El sistema constituye un avance funcional hacia una solución más completa de control de asistencia, manteniendo una arquitectura que podrá evolucionar en las siguientes etapas académicas.
 
 ---
 
-## 5. Interconexión entre `dashboard.html` y `gestion de datos.html`
-
-Ambas páginas operan como un sistema integrado:
-1. **Menú de Cabecera**: Permite saltar entre el Dashboard principal y Gestión de Datos con un solo clic.
-2. **Botón "+ Agregar Empleado" del Dashboard**: Redirige a `gestion de datos.html?action=new`, disparando inmediatamente el modal de registro de nuevo personal.
-3. **Botón "Ver Registros" en el Directorio**: Envía el ID del empleado en la URL (ej. `gestion de datos.html?empId=TS-002`), cargando su ficha y su tabla de marcaciones sin pasos intermedios.
-4. **Persistencia Sincronizada**: Ambas páginas comparten las claves `timeshift_employees_data` y `timeshift_punches_data` en `localStorage`, asegurando consistencia de datos en todo el navegador.
-
----
-
-## 6. Instrucciones de Ejecución
-
-1. Descarga o clona el repositorio en tu equipo.
-2. Abre la carpeta del proyecto:
-   ```text
-   TimeShift-feat-dashboard-admin/
-   ```
-3. Para iniciar la aplicación, puedes:
-   - **Opción A (Directa)**: Hacer doble clic en `index.html` o `dashboard.html` para abrirlo en cualquier navegador moderno (Google Chrome, Microsoft Edge, Firefox, etc.).
-   - **Opción B (Servidor Local)**: Si usas Visual Studio Code, haz clic derecho sobre `dashboard.html` y selecciona **"Open with Live Server"**.
-4. ¡Listo! Puedes agregar o dar de baja colaboradores, navegar entre las vistas y auditar los registros de marcación con sus respectivas etiquetas de color.
+**Proyecto académico — Universidad Don Bosco — Ciclo II 2026**
