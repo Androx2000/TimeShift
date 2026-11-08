@@ -3,20 +3,12 @@
  * Migrado a módulo ES desde js/auth.js (autor original: Alan Enrique Ventura Hernández).
  */
 
+import { USUARIOS_DEMO } from '../data/usuarios';
+
 const USERS_KEY = 'timeshift_users';
 const SESSION_KEY = 'timeshift_session';
 
-const DEFAULT_USERS = [
-    { username: 'jalvarado', password: 'Jovita2026', role: 'admin', cargo: 'Dueña', name: 'Jovita Alvarado' },
-                    { username: 'cgerente', password: 'Gerente2026', role: 'admin', cargo: 'Gerente', name: 'Carlos Guevara' },
-                    { username: 'aruiz', password: 'Operativo1', role: 'empleado', cargo: 'Abogada Litigante', name: 'Andrea Ruiz' },
-                    { username: 'mportillo', password: 'Operativo2', role: 'empleado', cargo: 'Abogada Corporativa', name: 'Marcela Portillo' },
-                    { username: 'jhenriquez', password: 'Operativo3', role: 'empleado', cargo: 'Asistente Legal', name: 'Javier Henríquez' },
-                    { username: 'lcastro', password: 'Operativo4', role: 'empleado', cargo: 'Asistente Legal', name: 'Luis Castro' },
-                    { username: 'rflores', password: 'Operativo5', role: 'empleado', cargo: 'Recepción', name: 'Roxana Flores' },
-                    { username: 'ppineda', password: 'Operativo6', role: 'empleado', cargo: 'Contabilidad', name: 'Patricia Pineda' },
-                    { username: 'esantos', password: 'Operativo7', role: 'empleado', cargo: 'Mensajería / Notificador', name: 'Eduardo Santos' }
-];
+const DEFAULT_USERS = USUARIOS_DEMO;
 
 function getUsers() {
   try {

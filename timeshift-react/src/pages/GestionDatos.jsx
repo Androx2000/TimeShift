@@ -14,7 +14,7 @@ export default function GestionDatos() {
 
   const term = search.trim().toLowerCase();
   const visible = empleados.filter((employee) =>
-    [employee.name, employee.username, employee.cargo].join(' ').toLowerCase().includes(term)
+    [employee.name, employee.username, employee.cargo, employee.departamento ?? ''].join(' ').toLowerCase().includes(term)
   );
 
   function openNew() {
@@ -122,6 +122,7 @@ export default function GestionDatos() {
                   <th className="text-left font-bold px-4 py-2 rounded-l-lg">Nombre</th>
                   <th className="text-left font-bold px-4 py-2">Usuario</th>
                   <th className="text-left font-bold px-4 py-2">Cargo</th>
+                  <th className="text-left font-bold px-4 py-2">Departamento</th>
                   <th className="text-right font-bold px-4 py-2 rounded-r-lg">Acciones</th>
                 </tr>
               </thead>
@@ -131,6 +132,7 @@ export default function GestionDatos() {
                     <td className="px-4 py-3 font-semibold">{employee.name}</td>
                     <td className="px-4 py-3 font-mono">{employee.username}</td>
                     <td className="px-4 py-3">{employee.cargo}</td>
+                    <td className="px-4 py-3">{employee.departamento ?? '—'}</td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <button
                         type="button"

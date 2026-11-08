@@ -1,9 +1,9 @@
 // src/components/EmpleadoForm.jsx
 // Formulario para agregar o editar un empleado, con validación por campo.
 import { useState } from 'react';
-import { validateEmployee } from '../services/empleados';
+import { DEPARTAMENTOS, validateEmployee } from '../services/empleados';
 
-const EMPTY_FORM = { name: '', username: '', cargo: '', password: '' };
+const EMPTY_FORM = { name: '', username: '', cargo: '', departamento: '', password: '' };
 
 const inputClass =
   'mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white ' +
@@ -29,7 +29,13 @@ function Field({ id, label, error, hint, children }) {
 export default function EmpleadoForm({ editing, users, onSubmit, onCancel }) {
   const [form, setForm] = useState(() =>
     editing
-      ? { name: editing.name, username: editing.username, cargo: editing.cargo, password: '' }
+      ? {
+          name: editing.name,
+          username: editing.username,
+          cargo: editing.cargo,
+          departamento: editing.departamento ?? '',
+          password: '',
+        }
       : EMPTY_FORM
   );
   const [errors, setErrors] = useState({});
@@ -81,6 +87,15 @@ export default function EmpleadoForm({ editing, users, onSubmit, onCancel }) {
 
         <Field id="emp-cargo" label="Cargo" error={errors.cargo}>
           <input type="text" autoComplete="off" {...props('cargo')} />
+        </Field>
+
+        <Field id="emp-departamento" label="Departamento" error={errors.departamento}>
+          <select {...props('departamento')}>
+            <option value="">Seleccione un departamento</option>
+            {DEPARTAMENTOS.map((departamento) => (
+              <option key={departamento} value={departamento}>{departamento}</option>
+            ))}
+          </select>
         </Field>
 
         <Field
