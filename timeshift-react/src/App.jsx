@@ -6,6 +6,7 @@ import Reportes from './pages/Reportes';
 import GestionDatos from './pages/GestionDatos';
 import RutaProtegida from './components/RutaProtegida';
 import Layout from './components/Layout';
+import EmpleadosProvider from './context/EmpleadosProvider';
 
 export default function App() {
   return (
@@ -15,7 +16,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
 
         {/* Páginas del administrador: misma barra, solo rol admin */}
-        <Route element={<RutaProtegida role="admin"><Layout /></RutaProtegida>}>
+        <Route element={<RutaProtegida role="admin"><EmpleadosProvider><Layout /></EmpleadosProvider></RutaProtegida>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/gestion" element={<GestionDatos />} />
           <Route path="/reportes" element={<Reportes />} />
