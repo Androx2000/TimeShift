@@ -40,14 +40,19 @@ export default function EmpleadosProvider({ children }) {
             username: data.username.trim().toLowerCase(),
             password: data.password,
             role: 'empleado',
-            cargo: data.cargo.trim(),
-            name: data.name.trim(),
+            cargo: data.cargo.trim().replace(/\s+/g, ' '),
+            departamento: data.departamento,
+            name: data.name.trim().replace(/\s+/g, ' '),
           },
         });
       },
 
       updateEmpleado(username, data) {
-        const changes = { name: data.name.trim(), cargo: data.cargo.trim() };
+        const changes = {
+          name: data.name.trim().replace(/\s+/g, ' '),
+          cargo: data.cargo.trim().replace(/\s+/g, ' '),
+          departamento: data.departamento,
+        };
         if (data.password) {
           changes.password = data.password;
         }
