@@ -34,6 +34,11 @@ export function verifyCredentials(username, password) {
   return getUsers().find((u) => u.username.toLowerCase() === nombre && u.password === password) || null;
 }
 
+/** Users with the employee role (the agents shown in the Monitor). */
+export function getEmployees() {
+  return getUsers().filter((user) => user.role === 'empleado');
+}
+
 export function createSession(user) {
   const session = {
     username: user.username,
