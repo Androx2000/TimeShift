@@ -6,7 +6,7 @@
  */
 
 const ENDPOINTS = {
-  timePrimary: 'https://timeapi.io/api/v1/time/current/zone?timeZone=America/El_Salvador',
+  timePrimary: 'https://timeapi.io/api/time/current/zone?timeZone=America/El_Salvador',
   timeFallback: 'https://worldtimeapi.org/api/timezone/America/El_Salvador',
   weatherSanSalvador: 'https://api.open-meteo.com/v1/forecast?latitude=13.6929&longitude=-89.2182&current=temperature_2m,relative_humidity_2m,weather_code&timezone=America%2FEl_Salvador',
   holidaysSV: 'https://date.nager.at/api/v3/NextPublicHolidays/SV',
@@ -54,18 +54,21 @@ export async function fetchOfficialTime() {
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
 
-    const hourPad = String(data.hour).padStart(2, '0');
-    const minPad = String(data.minute).padStart(2, '0');
-    const secPad = String(data.seconds).padStart(2, '0');
-    const timeStr = `${hourPad}:${minPad}:${secPad}`;
+    // Formato actual: { hour, minute, seconds, date, dateTime, timeZone, ... }.
+    // Si la API usara el formato nuevo { time: "16:47:09.67", date_time, timezone }, también se acepta.
+    const hasParts = Number.isInteger(data.hour) && Number.isInteger(data.minute) && Number.isInteger(data.seconds);
+    const timeStr = hasParts
+      ? `${String(data.hour).padStart(2, '0')}:${String(data.minute).padStart(2, '0')}:${String(data.seconds).padStart(2, '0')}`
+      : String(data.time ?? '').slice(0, 8);
+    if (!/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) throw new Error('Formato de hora inválido');
 
     return {
       ok: true,
       source: 'TimeAPI.io',
       timeString: timeStr,
-      dateString: data.date || `${data.year}-${String(data.month).padStart(2, '0')}-${String(data.day).padStart(2, '0')}`,
-      iso: data.dateTime || new Date().toISOString(),
-      timeZone: data.timeZone || 'America/El_Salvador',
+      dateString: data.date || String(data.date_time || data.dateTime || '').slice(0, 10),
+      iso: data.date_time || data.dateTime || new Date().toISOString(),
+      timeZone: data.timezone || data.timeZone || 'America/El_Salvador',
       isSynced: true,
     };
   } catch (errPrimary) {
