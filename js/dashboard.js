@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 employees.forEach(emp => {
                     const style = stateColors[emp.colorId] || stateColors['available'];
                     const badgeHTML = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border border-solid ${style.border} ${style.text} bg-transparent">${emp.state}</span>`;
-                    const avatarUrl = `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(emp.name)}&backgroundColor=e2e8f0`;
+                    const avatarUrl = (typeof TimeShiftAPI !== 'undefined') ? TimeShiftAPI.getAvatarUrl(emp.name) : `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(emp.name)}&backgroundColor=e2e8f0`;
                     
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-[#F8FAFC] transition-colors';
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-8 w-8">
-                                    <img class="h-8 w-8 rounded-full" src="${avatarUrl}" alt="${emp.name}">
+                                    <img class="h-8 w-8 rounded-full" src="${avatarUrl}" alt="${emp.name}" onerror="if(typeof TimeShiftAPI!=='undefined') TimeShiftAPI.handleAvatarError(this, '${emp.name.replace(/'/g, "\\'")}');">
                                 </div>
                                 <div class="ml-4">
                                     <p class="text-sm font-semibold text-slate-800">${emp.name}</p>
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 employees.forEach(emp => {
                     const style = stateColors[emp.colorId] || stateColors['available'];
                     const badgeHTML = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border border-solid ${style.border} ${style.text} bg-transparent">${emp.state}</span>`;
-                    const avatarUrl = `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(emp.name)}&backgroundColor=e2e8f0`;
+                    const avatarUrl = (typeof TimeShiftAPI !== 'undefined') ? TimeShiftAPI.getAvatarUrl(emp.name) : `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(emp.name)}&backgroundColor=e2e8f0`;
                     
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-[#F8FAFC] transition-colors';
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
-                                    <img class="h-10 w-10 rounded-full" src="${avatarUrl}" alt="${emp.name}">
+                                    <img class="h-10 w-10 rounded-full" src="${avatarUrl}" alt="${emp.name}" onerror="if(typeof TimeShiftAPI!=='undefined') TimeShiftAPI.handleAvatarError(this, '${emp.name.replace(/'/g, "\\'")}');">
                                 </div>
                                 <div class="ml-4">
                                     <p class="text-sm font-semibold text-slate-800">${emp.name}</p>
@@ -540,14 +540,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const desktopAvatar = document.getElementById('header-user-avatar');
     if (desktopName) desktopName.textContent = activeAdminName;
     if (desktopCargo) desktopCargo.textContent = activeAdminCargo;
-    if (desktopAvatar) desktopAvatar.src = `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(activeAdminName)}&backgroundColor=1e293b`;
+    const adminAvatarUrl = (typeof TimeShiftAPI !== 'undefined') ? TimeShiftAPI.getAvatarUrl(activeAdminName, '1e293b') : `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(activeAdminName)}&backgroundColor=1e293b`;
+
+    if (desktopAvatar) {
+        desktopAvatar.src = adminAvatarUrl;
+        desktopAvatar.onerror = function() { if (typeof TimeShiftAPI !== 'undefined') TimeShiftAPI.handleAvatarError(this, activeAdminName, '#1e3a8a'); };
+    }
 
     const mobileName = document.getElementById('header-user-name-mobile');
     const mobileCargo = document.getElementById('header-user-cargo-mobile');
     const mobileAvatar = document.getElementById('header-user-avatar-mobile');
     if (mobileName) mobileName.textContent = activeAdminName;
     if (mobileCargo) mobileCargo.textContent = activeAdminCargo;
-    if (mobileAvatar) mobileAvatar.src = `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(activeAdminName)}&backgroundColor=1e293b`;
+    if (mobileAvatar) {
+        mobileAvatar.src = adminAvatarUrl;
+        mobileAvatar.onerror = function() { if (typeof TimeShiftAPI !== 'undefined') TimeShiftAPI.handleAvatarError(this, activeAdminName, '#1e3a8a'); };
+    }
 
     const headerBadge = document.getElementById('header-user-badge');
     if (headerBadge) headerBadge.textContent = activeAdminName;

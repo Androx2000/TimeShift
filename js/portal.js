@@ -22,11 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (userNameEl) userNameEl.textContent = tsName;
         if (userRoleEl) userRoleEl.textContent = tsCargo || 'Empleado';
         if (userAvatarEl) {
-            userAvatarEl.src = `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(tsName)}&backgroundColor=e2e8f0`;
+            userAvatarEl.src = (typeof TimeShiftAPI !== 'undefined')
+                ? TimeShiftAPI.getAvatarUrl(tsName, 'e2e8f0')
+                : `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(tsName)}&backgroundColor=e2e8f0`;
+            userAvatarEl.onerror = function() {
+                if (typeof TimeShiftAPI !== 'undefined') {
+                    TimeShiftAPI.handleAvatarError(this, tsName, '#1e3a8a');
+                }
+            };
         }
     }
 
-    // 2. Simple Clock
+    // 2. Simple Clock & API Sync
     function updateClock() {
         const now = new Date();
         const clockEl = document.getElementById('live-clock');
@@ -40,6 +47,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setInterval(updateClock, 1000);
     updateClock();
+
+    // Consumo de APIs Externas en Portal (Clima Open-Meteo y Hora Oficial TimeAPI)
+    async function initPortalApis() {
+        if (typeof TimeShiftAPI === 'undefined') return;
+
+        // 1. Clima en San Salvador (Open-Meteo API)
+        try {
+            const w = await TimeShiftAPI.fetchWeather();
+            const tempEl = document.getElementById('live-weather-temp');
+            const iconEl = document.getElementById('live-weather-icon');
+            const pillEl = document.getElementById('live-weather-pill');
+            if (tempEl) tempEl.textContent = `${w.temp}°C`;
+            if (iconEl) iconEl.textContent = w.icon;
+            if (pillEl) pillEl.title = `Clima San Salvador: ${w.temp}°C, ${w.condition} (API Open-Meteo)`;
+        } catch (e) {
+            console.warn('Error cargando clima:', e);
+        }
+
+        // 2. Validación y Sincronización de Hora Oficial (TimeAPI / WorldTimeAPI)
+        try {
+            const t = await TimeShiftAPI.fetchOfficialTime();
+            const syncText = document.getElementById('api-sync-text');
+            if (syncText) {
+                syncText.textContent = t.isSynced ? `${t.source} (GMT-6)` : 'Reloj Local';
+            }
+        } catch (e) {
+            console.warn('Error sincronizando hora oficial:', e);
+        }
+    }
+    initPortalApis();
 
     // 3. State Management & Real-time Sync
     const deptMap = {

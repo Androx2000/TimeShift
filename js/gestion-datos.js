@@ -88,7 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const saveList = (key, list) => localStorage.setItem(key, JSON.stringify(list));
     const empCode = (id) => `EMP-${String(id).padStart(3, '0')}`;
-    const avatarFor = (name) => `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(name)}&backgroundColor=e2e8f0`;
+    const avatarFor = (name) => {
+        if (typeof TimeShiftAPI !== 'undefined') {
+            return TimeShiftAPI.getAvatarUrl(name, 'e2e8f0');
+        }
+        return `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(name)}&backgroundColor=e2e8f0`;
+    };
 
     // Fecha local (toISOString() usa UTC y de noche en El Salvador devuelve el día siguiente)
     const todayLocal = () => {
@@ -929,10 +934,71 @@ document.addEventListener('DOMContentLoaded', () => {
         || (tsUser === 'cgerente' ? 'Carlos Guevara' : 'Jovita Alvarado');
     const adminCargo = sessionStorage.getItem('ts_cargo') || localStorage.getItem('ts_cargo')
         || (tsUser === 'cgerente' ? 'Gerente' : 'Dueña');
-    const headerAvatar = `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(adminName)}&backgroundColor=1e293b`;
+    const headerAvatar = (typeof TimeShiftAPI !== 'undefined')
+        ? TimeShiftAPI.getAvatarUrl(adminName, '1e293b')
+        : `https://api.dicebear.com/10.x/pixelbot/svg?seed=${encodeURIComponent(adminName)}&backgroundColor=1e293b`;
 
     [['header-user-name', adminName], ['header-user-cargo', adminCargo],
      ['header-user-name-mobile', adminName], ['header-user-cargo-mobile', adminCargo],
      ['header-user-badge', adminName]].forEach(([id, text]) => { if ($(id)) $(id).textContent = text; });
-    ['header-user-avatar', 'header-user-avatar-mobile'].forEach((id) => { if ($(id)) $(id).src = headerAvatar; });
+    ['header-user-avatar', 'header-user-avatar-mobile'].forEach((id) => {
+        const el = $(id);
+        if (el) {
+            el.src = headerAvatar;
+            el.onerror = function() {
+                if (typeof TimeShiftAPI !== 'undefined') {
+                    TimeShiftAPI.handleAvatarError(this, adminName, '#1e3a8a');
+                }
+            };
+        }
+    });
+
+    // --- 14. CONSUMO DE API EXTERNA (RandomUser API) ----------------------
+    const btnFetchApi = $('btn-fetch-random-employee');
+    if (btnFetchApi) {
+        btnFetchApi.addEventListener('click', async () => {
+            btnFetchApi.disabled = true;
+            const originalHtml = btnFetchApi.innerHTML;
+            btnFetchApi.innerHTML = '<span>⏳</span> Consultando API...';
+
+            if (typeof TimeShiftAPI === 'undefined') {
+                notify('error', 'El módulo de APIs externas no se encuentra disponible.');
+                btnFetchApi.disabled = false;
+                btnFetchApi.innerHTML = originalHtml;
+                return;
+            }
+
+            try {
+                const res = await TimeShiftAPI.fetchRandomEmployee();
+                if (res.ok && res.employee) {
+                    const newId = employees.length > 0 ? Math.max(...employees.map(e => e.id || 0)) + 1 : 1;
+                    const importedEmp = {
+                        id: newId,
+                        name: res.employee.name,
+                        email: res.employee.email,
+                        phone: res.employee.phone,
+                        role: res.employee.role,
+                        department: res.employee.department,
+                        shift: res.employee.shift,
+                        state: 'Disponible',
+                        colorId: 'available',
+                        time: '00:00:00'
+                    };
+
+                    employees.unshift(importedEmp);
+                    saveList(LS_EMP, employees);
+                    renderEmployeesTable();
+                    updateKPIs();
+                    notify('success', `Empleado "${importedEmp.name}" importado exitosamente desde RandomUser API.`);
+                } else {
+                    notify('warning', `Importado con datos de respaldo: ${res.error || 'Servidor no respondió'}`);
+                }
+            } catch (err) {
+                notify('error', `Error al consultar la API externa: ${err.message}`);
+            } finally {
+                btnFetchApi.disabled = false;
+                btnFetchApi.innerHTML = originalHtml;
+            }
+        });
+    }
 });
