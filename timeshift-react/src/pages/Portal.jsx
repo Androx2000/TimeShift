@@ -7,18 +7,13 @@ import { getSession } from '../services/auth';
 import { loadStatus, saveStatus, loadHistory, saveHistory, dayOf } from '../services/status';
 
 
-  const formatClock = (timestamp) =>
-    new Date(timestamp).toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit' });
-  const username = getSession().username;
+const formatClock = (timestamp) =>
+  new Date(timestamp).toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit' });
 
 export default function Portal() {
-
-
-
+  const username = getSession().username;
   const [saved] = useState(() => loadStatus(username));
-  const [current, setCurrent] = useState(
-    () => STATES.find((state) => state.id === saved?.stateId) ?? STATES[0]
-  );
+  const [current, setCurrent] = useState(() => findState(saved?.stateId));
   const [startedAt, setStartedAt] = useState(() => saved?.startedAt ?? Date.now());
   const [now, setNow] = useState(() => Date.now());
   const [history, setHistory] = useState(() => loadHistory(username, dayOf(Date.now())));
@@ -65,8 +60,8 @@ export default function Portal() {
   }
 
   return (
-     <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-6">
-            <h2 className="text-sm sm:text-base font-bold text-text-muted">
+    <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-6">
+      <h2 className="text-sm sm:text-base font-bold text-text-muted">
         Selecciona tu Estado de Trabajo (Código AUX)
       </h2>
 
@@ -117,18 +112,13 @@ export default function Portal() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {[...history].reverse().map((entry) => {
-                
-                return (
-                  <tr key={entry.startedAt}>
-                    <td className="px-4 py-3 font-mono">{formatClock(entry.startedAt)}</td>
-                    <td className="px-4 py-3">                        
-                      <td className="px-4 py-3"><StateBadge stateId={entry.stateId} /></td>
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono">{entryDuration(entry)}</td>
-                  </tr>
-                );
-              })}
+              {[...history].reverse().map((entry) => (
+                <tr key={entry.startedAt}>
+                  <td className="px-4 py-3 font-mono">{formatClock(entry.startedAt)}</td>
+                  <td className="px-4 py-3"><StateBadge stateId={entry.stateId} /></td>
+                  <td className="px-4 py-3 text-right font-mono">{entryDuration(entry)}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}
