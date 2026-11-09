@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
-import { fetchOfficialTime, fetchWeather, fetchNextHoliday } from '../services/externalApi';
+import { fetchWeather, fetchNextHoliday } from '../services/externalApi';
 import {
   IconCalendarEvent,
-  IconClock,
   IconCloud,
   IconCloudFog,
   IconCloudRain,
   IconCloudStorm,
-  IconRefresh,
   IconSun,
   IconUmbrella,
 } from '@tabler/icons-react';
+
+const API_REFRESH_MS = 600000;
 
 // Maps the weather key returned by the service to its Tabler icon.
 const WEATHER_ICONS = {
@@ -23,7 +23,6 @@ const WEATHER_ICONS = {
 };
 
 export default function ApiWidgets() {
-  const [timeData, setTimeData] = useState(null);
   const [weatherData, setWeatherData] = useState(null);
   const [holidayData, setHolidayData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,17 +31,16 @@ export default function ApiWidgets() {
   // Pide las tres APIs en paralelo cada vez que cambia refreshKey.
   // Los setState ocurren después de await, y "cancelled" evita
   // actualizar el estado si el componente ya se desmontó.
+
   useEffect(() => {
     let cancelled = false;
     async function loadApis() {
       try {
-        const [t, w, h] = await Promise.all([
-          fetchOfficialTime(),
+               const [w, h] = await Promise.all([
           fetchWeather(),
           fetchNextHoliday(),
         ]);
         if (cancelled) return;
-        setTimeData(t);
         setWeatherData(w);
         setHolidayData(h);
       } catch (err) {
@@ -56,6 +54,15 @@ export default function ApiWidgets() {
       cancelled = true;
     };
   }, [refreshKey]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setLoading(true);
+      setRefreshKey((key) => key + 1);
+    }, API_REFRESH_MS);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Botón "Actualizar APIs"
   function refresh() {
@@ -78,29 +85,15 @@ export default function ApiWidgets() {
       alignItems: 'center',
       justifyContent: 'space-between',
       boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-    }}>
-      {/* 1. Hora Oficial */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <IconClock size={24} stroke={1.75} className="text-primary" aria-hidden="true" />
-        <div>
-          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>
-            Hora Oficial SV (API)
-          </div>
-          <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e3a8a', fontFamily: 'monospace' }}>
-            {timeData ? timeData.timeString : 'Sincronizando...'}
-          </div>
-          <span style={{ fontSize: '10px', color: timeData?.isSynced ? '#059669' : '#d97706', fontWeight: 600 }}>
-            {timeData?.source || 'Conectando'} (GMT-6)
-          </span>
-        </div>
-      </div>
+    }}
+    >
 
       {/* 2. Clima San Salvador */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <WeatherIcon size={24} stroke={1.75} className="text-primary" aria-hidden="true" />
         <div>
           <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>
-            Clima Diligencias (Open-Meteo)
+            Clima 
           </div>
           <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#0f172a' }}>
             {weatherData ? `${weatherData.temp}°C — ${weatherData.condition}` : 'Cargando clima...'}
@@ -116,7 +109,7 @@ export default function ApiWidgets() {
         <IconCalendarEvent size={24} stroke={1.75} className="text-primary" aria-hidden="true" />
         <div>
           <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>
-            Próximo Asueto (Nager.Date)
+            Próximo Asueto
           </div>
           <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#0f172a' }}>
             {holidayData ? holidayData.name : 'Consultando...'}

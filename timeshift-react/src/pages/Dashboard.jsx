@@ -6,6 +6,7 @@ import { loadStatus } from '../services/status';
 import Card from '../components/Card';
 import StateBadge from '../components/StateBadge';
 import ApiWidgets from '../components/ApiWidgets';
+import Avatar from '../components/Avatar';
 
 /** Every employee together with the status saved by their Portal. */
 function readAgents() {
@@ -97,9 +98,14 @@ export default function Dashboard() {
             <tbody className="divide-y divide-slate-100">
               {visible.map((agent) => (
                 <tr key={agent.username}>
-                  <td className="px-4 py-3">
-                    <p className="font-semibold">{agent.name}</p>
-                    <p className="text-xs text-text-muted">{agent.cargo}</p>
+                                    <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={agent.name} />
+                      <div>
+                        <p className="font-semibold">{agent.name}</p>
+                        <p className="text-xs text-text-muted">{agent.cargo}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     {agent.status
