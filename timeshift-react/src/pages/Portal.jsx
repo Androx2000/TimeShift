@@ -11,7 +11,7 @@ const formatClock = (timestamp) =>
   new Date(timestamp).toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit' });
 
 export default function Portal() {
-  const username = getSession().username;
+  const [username] = useState(() => getSession().username);
   const [saved] = useState(() => loadStatus(username));
   const [current, setCurrent] = useState(() => findState(saved?.stateId));
   const [startedAt, setStartedAt] = useState(() => saved?.startedAt ?? Date.now());
