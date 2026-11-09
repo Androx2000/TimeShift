@@ -25,18 +25,14 @@ const WEATHER_ICONS = {
 export default function ApiWidgets() {
   const [weatherData, setWeatherData] = useState(null);
   const [holidayData, setHolidayData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Pide las tres APIs en paralelo cada vez que cambia refreshKey.
-  // Los setState ocurren después de await, y "cancelled" evita
-  // actualizar el estado si el componente ya se desmontó.
-
+    // Pide el clima y el feriado al montar y luego cada 10 minutos.
+  // "cancelled" evita actualizar el estado si el componente ya se desmontó.
   useEffect(() => {
     let cancelled = false;
     async function loadApis() {
       try {
-               const [w, h] = await Promise.all([
+        const [w, h] = await Promise.all([
           fetchWeather(),
           fetchNextHoliday(),
         ]);
@@ -45,31 +41,17 @@ export default function ApiWidgets() {
         setHolidayData(h);
       } catch (err) {
         console.error('Error cargando APIs externas en React:', err);
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     }
     loadApis();
+    const intervalId = setInterval(loadApis, API_REFRESH_MS);
     return () => {
       cancelled = true;
+      clearInterval(intervalId);
     };
-  }, [refreshKey]);
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setLoading(true);
-      setRefreshKey((key) => key + 1);
-    }, API_REFRESH_MS);
-
-    return () => clearInterval(intervalId);
   }, []);
 
-  // Botón "Actualizar APIs"
-  function refresh() {
-    setLoading(true);
-    setRefreshKey((key) => key + 1);
-  }
-
+ 
   const WeatherIcon = WEATHER_ICONS[weatherData?.icon] ?? IconCloud;
 
   return (
@@ -120,29 +102,6 @@ export default function ApiWidgets() {
               : 'Calendario oficial'}
           </span>
         </div>
-      </div>
-
-      {/* Botón Refrescar */}
-      <div>
-        <button
-          type="button"
-          onClick={refresh}
-          disabled={loading}
-          style={{
-            background: '#1e3a8a',
-            color: '#ffffff',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            fontSize: '12px',
-            fontWeight: 600,
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1,
-            transition: 'background 0.2s'
-          }}
-        >
-          {loading ? 'Consultando...' : '↻ Actualizar APIs'}
-        </button>
       </div>
     </div>
   );
