@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchWeather, fetchNextHoliday } from '../services/externalApi';
 import {
   IconCalendarEvent,
+  IconClock,
   IconCloud,
   IconCloudFog,
   IconCloudRain,
@@ -23,10 +24,17 @@ const WEATHER_ICONS = {
 };
 
 export default function ApiWidgets() {
+  const [now, setNow] = useState(() => Date.now());
   const [weatherData, setWeatherData] = useState(null);
   const [holidayData, setHolidayData] = useState(null);
 
-    // Pide el clima y el feriado al montar y luego cada 10 minutos.
+  // Reloj en tiempo real (se actualiza cada segundo)
+  useEffect(() => {
+    const timerId = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timerId);
+  }, []);
+
+  // Pide el clima y el feriado al montar y luego cada 10 minutos.
   // "cancelled" evita actualizar el estado si el componente ya se desmontó.
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +59,19 @@ export default function ApiWidgets() {
     };
   }, []);
 
- 
+  const currentDate = new Date(now);
+  const timeString = currentDate.toLocaleTimeString('es-SV', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+  const dateString = currentDate.toLocaleDateString('es-SV', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
   const WeatherIcon = WEATHER_ICONS[weatherData?.icon] ?? IconCloud;
 
   return (
@@ -63,19 +83,35 @@ export default function ApiWidgets() {
       marginBottom: '24px',
       display: 'flex',
       flexWrap: 'wrap',
-      gap: '20px',
+      gap: '48px',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'center',
+      textAlign: 'center',
       boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
     }}
     >
+      {/* 1. Hora Real */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', textAlign: 'left' }}>
+        <IconClock size={24} stroke={1.75} className="text-primary" aria-hidden="true" />
+        <div>
+          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>
+            Hora Actual
+          </div>
+          <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#0f172a', fontFamily: 'monospace' }}>
+            {timeString}
+          </div>
+          <span style={{ fontSize: '10px', color: '#059669', fontWeight: 600, textTransform: 'capitalize' }}>
+            {dateString}
+          </span>
+        </div>
+      </div>
 
       {/* 2. Clima San Salvador */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', textAlign: 'left' }}>
         <WeatherIcon size={24} stroke={1.75} className="text-primary" aria-hidden="true" />
         <div>
           <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>
-            Clima 
+            Clima
           </div>
           <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#0f172a' }}>
             {weatherData ? `${weatherData.temp}°C — ${weatherData.condition}` : 'Cargando clima...'}
@@ -87,7 +123,7 @@ export default function ApiWidgets() {
       </div>
 
       {/* 3. Próximo Asueto */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', textAlign: 'left' }}>
         <IconCalendarEvent size={24} stroke={1.75} className="text-primary" aria-hidden="true" />
         <div>
           <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>
