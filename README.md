@@ -3,7 +3,7 @@
 
 **Universidad Don Bosco — Desarrollo de Aplicaciones Web con Software Interpretado en el Cliente (DAW901)**
 
-**Etapa 3 — Avance 1: Interactividad y Componentes Dinámicos**
+**Etapa 3 — Foro 2: Investigación y migración a React**
 
 ### Integrantes del proyecto
 
@@ -12,7 +12,37 @@
 - Marcos Abdulio López Alvarado — LA211485
 - Alan Enrique Ventura Hernández — VH262707
 
+## Entrega Foro 2 — Versión React
+
+| Entregable | Enlace |
+|---|---|
+| Código de la aplicación React | [`timeshift-react/`](./timeshift-react) |
+| Documento de investigación (PDF, APA 7) | [docs/TimeShift_Foro2_Investigacion_React.pdf](./docs/TimeShift_Foro2_Investigacion_React.pdf) |
+| Video de presentación | [Ver video en Google Drive](https://drive.google.com/drive/folders/1isbtq-FjuMCf5v-D5MFsachTfkULFOtM?usp=sharing) |
+
+### Responsables del Foro 2
+
+- **Boris Armando Campos López (CL253217):** estructura del proyecto, rutas protegidas por rol, Portal del empleado, Monitor en tiempo real, reloj local e íconos de la interfaz.
+- **Marcos Abdulio López Alvarado (LA211485):** gestión de empleados, reportes y estado global con Context.
+- **Diego Humberto Márquez Valencia (MV262624):** consumo de servicios externos (clima, próximo asueto nacional y avatares de los empleados).
+- **Alan Enrique Ventura Hernández (VH262707):** documento de investigación, video e integración de las ramas.
+
+### Cómo ejecutar la versión React
+
+```bash
+cd timeshift-react
+npm install
+npm run dev
+```
+
+Abrir `http://localhost:5173`. Usuarios de prueba: administrador `jalvarado` / `Jovita2026`, empleado `aruiz` / `Operativo1`. Para ver la sincronización, inicie sesión como administrador en una pestaña y como empleado en otra pestaña del mismo navegador. Los servicios externos requieren conexión a internet; sin ella, la aplicación usa valores locales de respaldo.
+
+
 ---
+
+# Documentación de la versión HTML (Foro 1)
+
+Lo que sigue corresponde a la entrega anterior, **Etapa 3 — Avance 1: Interactividad y Componentes Dinámicos**, desarrollada con HTML, CSS y JavaScript. Se conserva como referencia del proyecto; la entrega del Foro 2 está en la sección anterior.
 
 ## 1. Descripción general
 
