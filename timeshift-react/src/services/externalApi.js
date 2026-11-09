@@ -122,14 +122,14 @@ export async function fetchWeather() {
 
     const code = current.weather_code ?? 0;
     let condition = 'Despejado';
-    let icon = '☀️';
+        let icon = 'sun';
 
-    if (code === 0) { condition = 'Cielo despejado'; icon = '☀️'; }
-    else if (code <= 3) { condition = 'Parcialmente nublado'; icon = '⛅'; }
-    else if (code <= 48) { condition = 'Neblina'; icon = '🌫️'; }
-    else if (code <= 67) { condition = 'Lluvia ligera/moderada'; icon = '🌧️'; }
-    else if (code <= 82) { condition = 'Chubascos'; icon = '🌦️'; }
-    else { condition = 'Tormenta eléctrica'; icon = '⛈️'; }
+    if (code === 0) { condition = 'Cielo despejado'; icon = 'sun'; }
+    else if (code <= 3) { condition = 'Parcialmente nublado'; icon = 'cloud'; }
+    else if (code <= 48) { condition = 'Neblina'; icon = 'fog'; }
+    else if (code <= 67) { condition = 'Lluvia ligera/moderada'; icon = 'rain'; }
+    else if (code <= 82) { condition = 'Chubascos'; icon = 'showers'; }
+    else { condition = 'Tormenta eléctrica'; icon = 'storm'; }
 
     return {
       ok: true,
@@ -146,7 +146,7 @@ export async function fetchWeather() {
       temp: 26,
       humidity: 65,
       condition: 'Clima habitual',
-      icon: '⛅',
+      icon: 'cloud',
       location: 'San Salvador, SV',
       source: 'Estimación local',
       error: e.message,

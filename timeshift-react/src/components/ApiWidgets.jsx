@@ -1,5 +1,26 @@
 import { useState, useEffect } from 'react';
 import { fetchOfficialTime, fetchWeather, fetchNextHoliday } from '../services/externalApi';
+import {
+  IconCalendarEvent,
+  IconClock,
+  IconCloud,
+  IconCloudFog,
+  IconCloudRain,
+  IconCloudStorm,
+  IconRefresh,
+  IconSun,
+  IconUmbrella,
+} from '@tabler/icons-react';
+
+// Maps the weather key returned by the service to its Tabler icon.
+const WEATHER_ICONS = {
+  sun: IconSun,
+  cloud: IconCloud,
+  fog: IconCloudFog,
+  rain: IconCloudRain,
+  showers: IconUmbrella,
+  storm: IconCloudStorm,
+};
 
 export default function ApiWidgets() {
   const [timeData, setTimeData] = useState(null);
@@ -42,6 +63,8 @@ export default function ApiWidgets() {
     setRefreshKey((key) => key + 1);
   }
 
+  const WeatherIcon = WEATHER_ICONS[weatherData?.icon] ?? IconCloud;
+
   return (
     <div style={{
       background: '#ffffff',
@@ -58,7 +81,7 @@ export default function ApiWidgets() {
     }}>
       {/* 1. Hora Oficial */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontSize: '24px' }}>⏱️</span>
+        <IconClock size={24} stroke={1.75} className="text-primary" aria-hidden="true" />
         <div>
           <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>
             Hora Oficial SV (API)
@@ -74,7 +97,7 @@ export default function ApiWidgets() {
 
       {/* 2. Clima San Salvador */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontSize: '24px' }}>{weatherData?.icon || '⛅'}</span>
+        <WeatherIcon size={24} stroke={1.75} className="text-primary" aria-hidden="true" />
         <div>
           <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>
             Clima Diligencias (Open-Meteo)
@@ -90,7 +113,7 @@ export default function ApiWidgets() {
 
       {/* 3. Próximo Asueto */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontSize: '24px' }}>📅</span>
+        <IconCalendarEvent size={24} stroke={1.75} className="text-primary" aria-hidden="true" />
         <div>
           <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>
             Próximo Asueto (Nager.Date)
