@@ -40,74 +40,6 @@ export function getAvatarUrl(name, bg = 'e2e8f0') {
   return `${ENDPOINTS.diceBearBase}?seed=${seed}&backgroundColor=${bg}`;
 }
 
-export async function fetchOfficialTime() {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-    const resp = await fetch(ENDPOINTS.timePrimary, {
-      signal: controller.signal,
-      headers: { Accept: 'application/json' },
-    });
-    clearTimeout(timeoutId);
-
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-
-    // Formato actual: { hour, minute, seconds, date, dateTime, timeZone, ... }.
-    // Si la API usara el formato nuevo { time: "16:47:09.67", date_time, timezone }, también se acepta.
-    const hasParts = Number.isInteger(data.hour) && Number.isInteger(data.minute) && Number.isInteger(data.seconds);
-    const timeStr = hasParts
-      ? `${String(data.hour).padStart(2, '0')}:${String(data.minute).padStart(2, '0')}:${String(data.seconds).padStart(2, '0')}`
-      : String(data.time ?? '').slice(0, 8);
-    if (!/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) throw new Error('Formato de hora inválido');
-
-    return {
-      ok: true,
-      source: 'TimeAPI.io',
-      timeString: timeStr,
-      dateString: data.date || String(data.date_time || data.dateTime || '').slice(0, 10),
-      iso: data.date_time || data.dateTime || new Date().toISOString(),
-      timeZone: data.timezone || data.timeZone || 'America/El_Salvador',
-      isSynced: true,
-    };
-  } catch (errPrimary) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-      const resp2 = await fetch(ENDPOINTS.timeFallback, { signal: controller.signal });
-      clearTimeout(timeoutId);
-
-      if (!resp2.ok) throw new Error(`HTTP ${resp2.status}`);
-      const data2 = await resp2.json();
-      const remoteDate = new Date(data2.datetime);
-
-      return {
-        ok: true,
-        source: 'WorldTimeAPI.org',
-        timeString: remoteDate.toLocaleTimeString('es-SV', { hour12: false }),
-        dateString: remoteDate.toLocaleDateString('es-SV'),
-        iso: data2.datetime,
-        timeZone: data2.timezone || 'America/El_Salvador',
-        isSynced: true,
-      };
-    } catch (errSecondary) {
-      const now = new Date();
-      return {
-        ok: false,
-        source: 'Reloj Local (Offline)',
-        timeString: now.toLocaleTimeString('es-SV', { hour12: false }),
-        dateString: now.toLocaleDateString('es-SV'),
-        iso: now.toISOString(),
-        timeZone: 'Local',
-        isSynced: false,
-        error: `${errPrimary.message}; ${errSecondary.message}`,
-      };
-    }
-  }
-}
-
 export async function fetchWeather() {
   try {
     const controller = new AbortController();
@@ -122,14 +54,14 @@ export async function fetchWeather() {
 
     const code = current.weather_code ?? 0;
     let condition = 'Despejado';
-    let icon = '☀️';
+        let icon = 'sun';
 
-    if (code === 0) { condition = 'Cielo despejado'; icon = '☀️'; }
-    else if (code <= 3) { condition = 'Parcialmente nublado'; icon = '⛅'; }
-    else if (code <= 48) { condition = 'Neblina'; icon = '🌫️'; }
-    else if (code <= 67) { condition = 'Lluvia ligera/moderada'; icon = '🌧️'; }
-    else if (code <= 82) { condition = 'Chubascos'; icon = '🌦️'; }
-    else { condition = 'Tormenta eléctrica'; icon = '⛈️'; }
+    if (code === 0) { condition = 'Cielo despejado'; icon = 'sun'; }
+    else if (code <= 3) { condition = 'Parcialmente nublado'; icon = 'cloud'; }
+    else if (code <= 48) { condition = 'Neblina'; icon = 'fog'; }
+    else if (code <= 67) { condition = 'Lluvia ligera/moderada'; icon = 'rain'; }
+    else if (code <= 82) { condition = 'Chubascos'; icon = 'showers'; }
+    else { condition = 'Tormenta eléctrica'; icon = 'storm'; }
 
     return {
       ok: true,
@@ -146,12 +78,113 @@ export async function fetchWeather() {
       temp: 26,
       humidity: 65,
       condition: 'Clima habitual',
-      icon: '⛅',
+      icon: 'cloud',
       location: 'San Salvador, SV',
       source: 'Estimación local',
       error: e.message,
     };
   }
+}
+
+// Asuetos remunerados oficiales de El Salvador (Art. 190 del Código de Trabajo)
+// Se excluyen días festivos generales o culturales sin asueto laboral (ej. Festival de la Pupusa,
+// Día de la Cruz, Día del Soldado, Día del Niño, Día de la Raza, etc.).
+const OFFICIAL_SV_ASUETOS_FIXED = {
+  '01-01': 'Año Nuevo',
+  '05-01': 'Día del Trabajo',
+  '05-10': 'Día de la Madre',
+  '06-17': 'Día del Padre',
+  '08-03': 'Fiestas Agostinas (San Salvador)',
+  '08-05': 'Fiestas Agostinas (San Salvador)',
+  '08-06': 'Día del Divino Salvador del Mundo',
+  '09-15': 'Día de la Independencia',
+  '11-02': 'Día de los Difuntos',
+  '12-25': 'Navidad',
+};
+
+function getHolyWeekAsuetos(year) {
+  // Algoritmo de Meeus/Jones/Butcher para Domingo de Pascua
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+
+  const easter = new Date(year, month - 1, day);
+  const formatISO = (dt) => {
+    const y = dt.getFullYear();
+    const mo = String(dt.getMonth() + 1).padStart(2, '0');
+    const da = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${mo}-${da}`;
+  };
+
+  const juevesSanto = new Date(easter);
+  juevesSanto.setDate(easter.getDate() - 3);
+  const viernesSanto = new Date(easter);
+  viernesSanto.setDate(easter.getDate() - 2);
+  const sabadoGloria = new Date(easter);
+  sabadoGloria.setDate(easter.getDate() - 1);
+
+  return {
+    [formatISO(juevesSanto)]: 'Jueves Santo',
+    [formatISO(viernesSanto)]: 'Viernes Santo',
+    [formatISO(sabadoGloria)]: 'Sábado de Gloria',
+  };
+}
+
+function getOfficialAsuetosMap(years) {
+  const map = {};
+  for (const year of years) {
+    for (const [mmdd, name] of Object.entries(OFFICIAL_SV_ASUETOS_FIXED)) {
+      map[`${year}-${mmdd}`] = name;
+    }
+    Object.assign(map, getHolyWeekAsuetos(year));
+  }
+  return map;
+}
+
+function findNextOfficialAsueto(apiHolidays = []) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const currentYear = today.getFullYear();
+  const officialMap = getOfficialAsuetosMap([currentYear, currentYear + 1]);
+
+  // 1. Filtra los feriados devueltos por la API para conservar únicamente asuetos oficiales de ley
+  const validFromApi = (Array.isArray(apiHolidays) ? apiHolidays : [])
+    .filter((h) => h && h.date && officialMap[h.date])
+    .map((h) => ({
+      date: h.date,
+      name: officialMap[h.date],
+    }));
+
+  // 2. Combina con el calendario oficial Art. 190 (por si la API omite ej. 1 de enero o 17 de junio)
+  const mergedByDate = new Map();
+  for (const [date, name] of Object.entries(officialMap)) {
+    mergedByDate.set(date, { date, name });
+  }
+  for (const item of validFromApi) {
+    mergedByDate.set(item.date, item);
+  }
+
+  const upcoming = Array.from(mergedByDate.values())
+    .map((item) => {
+      const holDate = new Date(item.date + 'T00:00:00');
+      const diffDays = Math.ceil((holDate - today) / (1000 * 60 * 60 * 24));
+      return { ...item, diffDays };
+    })
+    .filter((item) => item.diffDays >= 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  return upcoming[0] || null;
 }
 
 export async function fetchNextHoliday() {
@@ -165,29 +198,24 @@ export async function fetchNextHoliday() {
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const holidays = await resp.json();
 
-    if (Array.isArray(holidays) && holidays.length > 0) {
-      const next = holidays[0];
-      const holDate = new Date(next.date + 'T00:00:00');
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const diffDays = Math.ceil((holDate - today) / (1000 * 60 * 60 * 24));
-
+    const nextOfficial = findNextOfficialAsueto(holidays);
+    if (nextOfficial) {
       return {
         ok: true,
-        name: next.localName || next.name,
-        date: next.date,
-        daysLeft: diffDays,
-        source: 'Nager.Date API',
+        name: nextOfficial.name,
+        date: nextOfficial.date,
+        daysLeft: nextOfficial.diffDays,
+        source: 'Nager.Date API (Asuetos SV)',
       };
     }
-    throw new Error('Sin feriados próximos registrados');
+    throw new Error('Sin asuetos oficiales próximos registrados');
   } catch (e) {
+    const fallbackNext = findNextOfficialAsueto([]);
     return {
       ok: false,
-      name: 'Próximo asueto nacional',
-      date: 'Calendario laboral',
-      daysLeft: null,
+      name: fallbackNext ? fallbackNext.name : 'Próximo asueto nacional',
+      date: fallbackNext ? fallbackNext.date : 'Calendario laboral',
+      daysLeft: fallbackNext ? fallbackNext.diffDays : null,
       error: e.message,
     };
   }
