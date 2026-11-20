@@ -12,10 +12,17 @@
 - Marcos Abdulio López Alvarado — LA211485
 - Alan Enrique Ventura Hernández — VH262707
 
+## Aplicación en línea
+
+**https://timeshift2.netlify.app**
+
+La versión React está publicada en Netlify. La configuración de compilación está en [`netlify.toml`](./netlify.toml): Netlify compila la carpeta `timeshift-react` con `npm run build` y sirve todas las rutas con `index.html`, para que recargar una página como `/reportes` no dé error 404. Las cuentas de prueba son las mismas de la sección [Cómo ejecutar la versión React](#cómo-ejecutar-la-versión-react).
+
 ## Entrega Foro 2 — Versión React
 
 | Entregable | Enlace |
 |---|---|
+| Aplicación publicada (Netlify) | [timeshift2.netlify.app](https://timeshift2.netlify.app) |
 | Código de la aplicación React | [`timeshift-react/`](./timeshift-react) |
 | Documento de investigación (PDF, APA 7) | [docs/TimeShift_Foro2_Investigacion_React.pdf](./docs/TimeShift_Foro2_Investigacion_React.pdf) |
 | Video de presentación | [Ver video en Google Drive](https://drive.google.com/drive/folders/1isbtq-FjuMCf5v-D5MFsachTfkULFOtM?usp=sharing) |
