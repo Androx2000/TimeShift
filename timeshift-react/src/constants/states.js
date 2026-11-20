@@ -12,3 +12,12 @@ export const STATES = [
 export function findState(id) {
     return STATES.find((state) => state.id === id) ?? STATES[0];
 }
+
+export function themeColor(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(`--color-${name}`).trim();
+}
+
+/** Hex color of an AUX state. */
+export function stateColor(id) {
+    return themeColor(findState(id).id);
+}

@@ -23,15 +23,17 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="flex flex-wrap items-center gap-x-8 gap-y-2 bg-primary px-6 py-3 text-white shadow">
+            {/* Phone/tablet: logo and "Cerrar sesión" on top, menu below at full width
+          (it scrolls sideways if it doesn't fit). From lg up, everything in one row. */}
+      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-primary px-4 py-3 text-white shadow sm:px-6 lg:gap-x-8">
         <strong className="text-lg tracking-tight">TimeShift</strong>
-        <nav className="flex flex-1 gap-1">
+        <nav className="order-last flex w-full gap-1 overflow-x-auto lg:order-none lg:w-auto lg:flex-1">
           {MENU[session.role].map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                `inline-flex min-h-11 items-center whitespace-nowrap rounded-lg px-3 text-sm font-medium transition-colors ${
                   isActive ? 'bg-white/20 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'
                 }`
               }
@@ -40,16 +42,15 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
-        <span className="text-sm text-white/80">{session.name} · {session.cargo}</span>
+        <span className="ml-auto hidden text-sm text-white/80 sm:inline">{session.name} · {session.cargo}</span>
         <button
           type="button"
           onClick={cerrarSesion}
-          className="rounded-lg border border-white/40 px-3 py-1.5 text-sm font-medium hover:bg-white/10"
+          className="ml-auto min-h-11 rounded-lg border border-white/40 px-3 text-sm font-medium hover:bg-white/10 sm:ml-0"
         >
           Cerrar sesión
         </button>
       </header>
-
       <main>
         <Outlet />
       </main>

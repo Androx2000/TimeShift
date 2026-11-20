@@ -2,7 +2,7 @@
 // Arma las filas del reporte a partir del historial que guarda el Portal
 // (services/status.js) y calcula filtros, resumen y exportación a CSV.
 
-import { findState } from '../constants/states';
+import { STATES, findState } from '../constants/states';
 import { formatDuration } from '../utils/time';
 import { loadHistory } from './status';
 
@@ -77,6 +77,62 @@ export function summarize(rows) {
     pauseMs: sum(timed.filter((row) => row.stateId === 'lunch' || row.stateId === 'break')),
   };
 }
+
+/**
+ * Tiempo acumulado por estado, para la dona y la tabla del PDF.
+ * "Salida" no se incluye porque no tiene duración.
+ * @returns {Array<{ stateId, count, totalMs, percent }>} solo los estados con registros
+ */
+export function summarizeByState(rows) {
+  const timed = rows.filter((row) => row.durationMs !== null);
+  const totalMs = timed.reduce((total, row) => total + row.durationMs, 0);
+
+  return STATES.filter((state) => state.id !== 'end')
+    .map((state) => {
+      const ofState = timed.filter((row) => row.stateId === state.id);
+      const stateMs = ofState.reduce((total, row) => total + row.durationMs, 0);
+      return {
+        stateId: state.id,
+        count: ofState.length,
+        totalMs: stateMs,
+        percent: totalMs > 0 ? (stateMs / totalMs) * 100 : 0,
+      };
+    })
+    .filter((item) => item.count > 0);
+}
+
+/**
+ * @returns {{ days: string[], minutes: Object<string, number[]> }} 
+ */
+export function minutesByDay(rows) {
+  const timed = rows.filter((row) => row.durationMs !== null);
+  const days = [...new Set(timed.map((row) => row.day))].sort();
+  const minutes = {};
+
+  for (const state of STATES) {
+    if (state.id === 'end') {
+      continue;
+    }
+    minutes[state.id] = days.map((day) => {
+      const dayMs = timed
+        .filter((row) => row.day === day && row.stateId === state.id)
+        .reduce((total, row) => total + row.durationMs, 0);
+      return Math.round(dayMs / 6000) / 10; // minutos con un decimal
+    });
+  }
+
+  return { days, minutes };
+}
+
+/** "2026-11-17" → "17/11/2026" */
+export const formatDay = (day) => day.split('-').reverse().join('/');
+
+/** Hora corta (hh:mm) de un instante, o "—" si el estado sigue abierto. */
+export const formatClock = (timestamp) =>
+  timestamp === null
+    ? '—'
+    : new Date(timestamp).toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit' });
+
 
 const quote = (value) => `"${String(value).replace(/"/g, '""')}"`;
 const clockTime = (timestamp) =>
