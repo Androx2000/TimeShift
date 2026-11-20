@@ -1,0 +1,16 @@
+# Netlify compila y publica la versión React (no la versión HTML de la raíz).
+[build]
+  base = "timeshift-react"     # carpeta donde está el package.json
+  command = "npm run build"    # genera la app con Vite
+  publish = "dist"             # carpeta resultante (relativa a "base")
+
+[build.environment]
+  NODE_VERSION = "22"          # Vite 8 necesita Node 20.19 o superior
+
+# La app usa React Router: rutas como /reportes no existen como archivo,
+# así que todas se sirven con index.html y React decide qué pantalla mostrar.
+# Sin esto, recargar /reportes en producción da error 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
