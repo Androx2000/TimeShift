@@ -4,6 +4,7 @@ import { formatDuration } from '../utils/time';
 import { getEmployees } from '../services/auth';
 import { loadStatus } from '../services/status';
 import Card from '../components/Card';
+import KpiCard from '../components/KpiCard';
 import StateBadge from '../components/StateBadge';
 import ApiWidgets from '../components/ApiWidgets';
 import Avatar from '../components/Avatar';
@@ -54,12 +55,11 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {STATES.map((state) => (
-          <Card key={state.id}>
-            <StateBadge stateId={state.id} />
-            <p className="text-3xl font-bold mt-2">
-              {agents.filter((agent) => agent.status?.stateId === state.id).length}
-            </p>
-          </Card>
+          <KpiCard
+            key={state.id}
+            label={<StateBadge stateId={state.id} />}
+            value={agents.filter((agent) => agent.status?.stateId === state.id).length}
+          />
         ))}
       </div>
 
