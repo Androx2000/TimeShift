@@ -1,0 +1,49 @@
+TimeShift — Sistema Web de Control de Asistencia y Gestión de Turnos
+Copyright (c) 2026 Boris Armando Campos López, Diego Humberto Márquez Valencia,
+Marcos Abdulio López Alvarado y Alan Enrique Ventura Hernández
+
+Esta obra está bajo una Licencia Creative Commons
+Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0).
+
+This work is licensed under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0).
+
+Alcance: la licencia se aplica al código fuente, la documentación y los mockups
+creados por el equipo TimeShift.
+
+-------------------------------------------------------------------------------
+Resumen para lectores (no sustituye el texto legal de la licencia)
+-------------------------------------------------------------------------------
+
+Usted es libre de:
+
+  - Compartir: copiar y redistribuir el material en cualquier medio o formato.
+  - Adaptar: remezclar, transformar y construir a partir del material.
+
+Bajo los siguientes términos:
+
+  - Atribución: debe reconocer adecuadamente la autoría, proporcionar un enlace
+    a la licencia e indicar si se han realizado cambios.
+  - NoComercial: no puede utilizar el material con fines comerciales.
+  - CompartirIgual: si remezcla, transforma o crea a partir del material,
+    debe distribuir sus contribuciones bajo la misma licencia que el original.
+  - Sin restricciones adicionales: no puede aplicar términos legales ni medidas
+    tecnológicas que restrinjan legalmente a otros hacer lo que la licencia
+    permite.
+
+-------------------------------------------------------------------------------
+Texto oficial
+-------------------------------------------------------------------------------
+
+Resumen oficial:   https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es
+Texto legal:       https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.es
+Original (inglés): https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+-------------------------------------------------------------------------------
+Material de terceros
+-------------------------------------------------------------------------------
+
+Las librerías, tipografías, imágenes de ejemplo y demás recursos de terceros
+que se utilicen en el proyecto (por ejemplo React, Tailwind CSS, Chart.js,
+SweetAlert2, SheetJS y jsPDF) conservan sus propias licencias y no quedan
+cubiertos por esta licencia.

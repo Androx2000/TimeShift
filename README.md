@@ -1,6 +1,8 @@
 # TimeShift
 ## Sistema Web de Control de Asistencia y Gestión de Turnos
 
+[![Licencia: CC BY-NC-SA 4.0](https://img.shields.io/badge/Licencia-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es)
+
 **Universidad Don Bosco — Desarrollo de Aplicaciones Web con Software Interpretado en el Cliente (DAW901)**
 
 **Etapa 3 — Foro 2: Investigación y migración a React**
@@ -44,6 +46,30 @@ npm run dev
 
 Abrir `http://localhost:5173`. Usuarios de prueba: administrador `jalvarado` / `Jovita2026`, empleado `aruiz` / `Operativo1`. Para ver la sincronización, inicie sesión como administrador en una pestaña y como empleado en otra pestaña del mismo navegador. Los servicios externos requieren conexión a internet; sin ella, la aplicación usa valores locales de respaldo.
 
+
+## Mockups de la interfaz
+
+Estos mockups son la referencia visual del diseño que guió el desarrollo de TimeShift: inicio de sesión, portal del empleado y panel de administración. Los nombres y datos que aparecen en ellos son ficticios.
+
+### Inicio de sesión
+
+![Mockup del inicio de sesión de TimeShift](docs/mockups/01-login.png)
+
+Acceso con usuario y contraseña, con botón para mostrar u ocultar la contraseña.
+
+### Portal del empleado
+
+![Mockup del portal del empleado de TimeShift](docs/mockups/02-portal-empleado.png)
+
+El empleado elige su estado AUX, ve el cronómetro del estado actual y consulta el historial del día.
+
+### Panel de administración
+
+![Mockup del panel de administración de TimeShift](docs/mockups/03-panel-admin.png)
+
+El administrador monitorea en tiempo real el estado de cada empleado y consulta indicadores y la distribución del tiempo.
+
+> **Nota:** los mockups muestran una primera propuesta de estados AUX. En la versión React los estados finales son cuatro: Disponible, Lunch, Break y Salida. Los archivos de las imágenes están en [`docs/mockups/`](./docs/mockups).
 
 ---
 
@@ -308,6 +334,22 @@ TimeShift incorpora herramientas interactivas que permiten automatizar tareas ad
 Chart.js facilita la interpretación de información mediante visualizaciones; SweetAlert2 mejora la retroalimentación de las acciones del usuario; y SheetJS y jsPDF permiten exportar información en formatos útiles para la administración.
 
 El sistema constituye un avance funcional hacia una solución más completa de control de asistencia, manteniendo una arquitectura que podrá evolucionar en las siguientes etapas académicas.
+
+## Licencia
+
+[![Licencia: CC BY-NC-SA 4.0](https://img.shields.io/badge/Licencia-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es)
+
+Esta obra está bajo una licencia [Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es).
+
+**Copyright © 2026** Boris Armando Campos López, Diego Humberto Márquez Valencia, Marcos Abdulio López Alvarado y Alan Enrique Ventura Hernández.
+
+Usted es libre de compartir y adaptar este material, siempre que cumpla estas condiciones:
+
+- **Atribución:** reconozca la autoría del equipo TimeShift e indique si realizó cambios.
+- **NoComercial:** no lo utilice con fines comerciales.
+- **CompartirIgual:** si lo modifica o lo transforma, distribuya sus contribuciones bajo la misma licencia.
+
+El aviso de licencia está en el archivo [`LICENSE`](./LICENSE) y el texto legal completo en [creativecommons.org](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.es). Las librerías y recursos de terceros utilizados (por ejemplo React, Tailwind CSS, Chart.js, SweetAlert2, SheetJS y jsPDF) conservan sus propias licencias y no quedan cubiertos por esta.
 
 ---
 
