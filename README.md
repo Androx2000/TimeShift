@@ -5,7 +5,7 @@
 
 **Universidad Don Bosco — Desarrollo de Aplicaciones Web con Software Interpretado en el Cliente (DAW901)**
 
-**Etapa 3 — Foro 2: Investigación y migración a React**
+**Etapa 3 — Entrega final: aplicación React completa**
 
 ### Integrantes del proyecto
 
@@ -20,7 +20,7 @@
 
 La versión React está publicada en Netlify. La configuración de compilación está en [`netlify.toml`](./netlify.toml): Netlify compila la carpeta `timeshift-react` con `npm run build` y sirve todas las rutas con `index.html`, para que recargar una página como `/reportes` no dé error 404. Las cuentas de prueba son las mismas de la sección [Cómo ejecutar la versión React](#cómo-ejecutar-la-versión-react).
 
-## Entrega Foro 2 — Versión React
+## Entrega final — Versión React
 
 | Entregable | Enlace |
 |---|---|
@@ -29,12 +29,23 @@ La versión React está publicada en Netlify. La configuración de compilación 
 | Documento de investigación (PDF, APA 7) | [docs/TimeShift_Foro2_Investigacion_React.pdf](./docs/TimeShift_Foro2_Investigacion_React.pdf) |
 | Video de presentación | [Ver video en Google Drive](https://drive.google.com/drive/folders/1isbtq-FjuMCf5v-D5MFsachTfkULFOtM?usp=sharing) |
 
-### Responsables del Foro 2
+### Responsables
 
 - **Boris Armando Campos López (CL253217):** estructura del proyecto, rutas protegidas por rol, Portal del empleado, Monitor en tiempo real, reloj local e íconos de la interfaz.
 - **Marcos Abdulio López Alvarado (LA211485):** gestión de empleados, reportes y estado global con Context.
 - **Diego Humberto Márquez Valencia (MV262624):** consumo de servicios externos (clima, próximo asueto nacional y avatares de los empleados).
 - **Alan Enrique Ventura Hernández (VH262707):** documento de investigación, video e integración de las ramas.
+
+### Trabajo colaborativo: ramas y aportes
+
+Cada integrante trabajó en sus propias ramas y todos aparecen con commits en el historial del repositorio. La integración se hizo con pull requests hacia `main`.
+
+| Integrante | Ramas principales | Aporte |
+|---|---|---|
+| Boris Armando Campos López | `feature/react-base`, `boris/portal-monitor`, `boris/fix-session-icons`, `boris/reportes-final`, `boris/readme-netlify` | Base del proyecto React, rutas protegidas, Portal, Monitor, reportes con gráficas dinámicas y exportación a PDF, diseño responsive y despliegue en Netlify. |
+| Marcos Abdulio López Alvarado | `feature/modulos-secundarios`, `feature/portal-aux`, `feature/readme-mockups` | Gestión de empleados, estado global con Context, reportes, mockups en el README y licencia Creative Commons. |
+| Diego Humberto Márquez Valencia | `feature/Consumo-de-API`, `feature/reportes` | Consumo de servicios externos: clima, próximo asueto nacional y avatares. |
+| Alan Enrique Ventura Hernández | `integracion-foro2`, `feature/gestion-usuarios`, `Alan-Login` | Integración de las ramas, estilos del menú y del inicio de sesión, y documento de investigación en [`docs/`](./docs). |
 
 ### Cómo ejecutar la versión React
 
